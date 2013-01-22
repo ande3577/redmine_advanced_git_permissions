@@ -1,0 +1,145 @@
+#!/usr/bin/perl
+
+# Set to true to diagnose issues, false to reduce clutter
+my $verbose = 1;
+
+if ($verbose) {
+  use warnings;
+}
+
+my $ref_name = $ARGV[0];
+my $old_ref = $ARGV[1];
+my $new_ref = $ARGV[2];
+
+my $zero="0000000000000000000000000000000000000000";
+
+my $user = $ENV{'GIT_COMMITTER_NAME'};
+
+sub trim($)
+{
+	my $string = shift;
+	$string =~ s/^\s+//;
+	$string =~ s/\s+$//;
+	return $string;
+}
+
+sub grant {
+  if($verbose) {
+    ($reason) = @_;
+    print("Access Granted: $reason\n");
+  }
+  exit(0);
+}
+
+sub deny {
+  ($reason) = @_;
+  print("Access Denied: $reason\n");
+  exit(0);
+}
+
+sub get_project_identifier {
+    my $r = shift;
+
+    my $cfg = Apache2::Module::get_config(__PACKAGE__, $r->server, $r->per_dir_config);
+    my $location = $r->location;
+    $location =~ s/\.git$// if (defined $cfg->{RedmineGitSmartHttp} and $cfg->{RedmineGitSmartHttp});
+    my ($identifier) = $r->uri =~ m{$location/*([^/.]+)};
+    $identifier;
+}
+
+sub connect_database {
+    my $r = shift;
+
+    my $cfg = Apache2::Module::get_config(__PACKAGE__, $r->server, $r->per_dir_config);
+    return DBI->connect($cfg->{RedmineDSN}, $cfg->{RedmineDbUser}, $cfg->{RedmineDbPass});
+}
+
+sub is_protected_branch {
+  ($branch_name) = @_;
+  return $branch_name eq 'protected';
+}
+
+sub allow_update_protected_branch {
+  return 0;
+}
+
+sub allow_create_branch {
+  return 0;
+}
+
+sub allow_delete_branch {
+  return 0;
+}
+
+sub allow_non_fast_forward {
+  return 0;
+}
+
+sub allow_delete_tags {
+  return 0;
+}
+
+sub allow_move_tags {
+  return 0;
+}
+
+sub allow_unannotated_tags {
+  return 0;
+}
+
+my $commit_type;
+if ( $new_ref eq $zero) {
+  $commit_type = 'delete';
+} else {
+  $commit_type = trim(`/usr/bin/git cat-file -t $new_ref`);
+}
+
+if ($verbose) {
+  print("user = $user\n");
+  print("ref_name = $ref_name\n");
+  print("old_ref = $old_ref\n");
+  print("new_ref = $new_ref\n");
+  print("commit_type = $commit_type\n\n");
+}
+
+if ($ref_name  =~ "^refs/heads/") {
+  $short_name = $ref_name;
+  $short_name =~ s/refs\/heads\///;
+  if ( $verbose ) { print("$short_name is a branch\n"); }
+
+  if ( is_protected_branch($short_name) && !allow_update_protected_branch() ) {
+    deny("Cannot update protected branch");
+  } elsif ( $old_ref eq $zero && !allow_create_branch()) {
+    deny("Cannot create branch");
+  } elsif ( $new_ref eq $zero && !allow_delete_branch()) {
+    deny("Cannot delete branch");
+  } else {
+    #updating an existing branch
+    $merge_base = trim(`git merge-base $old_ref $new_ref`);
+    if ( $verbose ) { print("merge-base = $merge_base\n") };
+    if ( $merge_base ne $old_ref && !allow_non_fast_forward()) {
+      deny("Cannot perform non fast-forward merge.");
+    }
+  }
+
+} elsif ($ref_name  =~ "^refs/tags/") {
+  $short_name = $ref_name;
+  $short_name =~ s/refs\/tags\///;
+  if ( $verbose ) { print("$short_name is a tag\n"); }
+  if ( $new_ref eq $zero && !allow_delete_tags() ) {
+    deny("Cannot delete tags");
+  } elsif ( $old_ref ne $zero && !allow_move_tags() ) {
+    deny("Cannot move tags");
+  } elsif ( $commit_type ne "tag" && !allow_unannotated_tags() ) {
+    deny("Cannot create unannotated tag");
+  }
+} else {
+  deny ("$ref_name is not a branch or tag.");
+}
+
+grant("Test of granting permission");
+
+
+
+
+
