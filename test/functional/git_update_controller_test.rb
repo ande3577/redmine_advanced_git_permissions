@@ -31,6 +31,10 @@ class GitUpdateControllerTest < ActionController::TestCase
     Role.find(1).add_permission! :create_branch
     get(:create_branch, {:branch_name => "master", :proj_name => Project.first.name, :user_name => @user.login})
     assert_response :success, "create branch with permission"
+    
+    get(:create_branch, {:proj_name => Project.first.name, :user_name => @user.login})
+    assert_response :missing, "create branch without passing name"  
+    
   end
   
   def test_update_branch
