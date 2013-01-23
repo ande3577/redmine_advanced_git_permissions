@@ -11,6 +11,7 @@ class GitUpdateControllerTest < ActionController::TestCase
   def setup
     @project = Project.where(:id => 1).first
     @user = User.where(:id => 2).first
+    @admin = User.where(:admin => true).first
   end
   
   # Replace this with your real tests.
@@ -27,6 +28,9 @@ class GitUpdateControllerTest < ActionController::TestCase
   def test_create_branch
     get(:create_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
     assert_response 403, "create branch without permission"
+      
+    get(:create_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login})
+    assert_response :success, "create branch as admin"
       
     Role.find(1).add_permission! :create_branch
     get(:create_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
