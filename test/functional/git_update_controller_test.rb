@@ -10,6 +10,8 @@ class GitUpdateControllerTest < ActionController::TestCase
   
   def setup
     @project = Project.where(:id => 1).first
+    @project.enabled_module_names = [:repositories]
+    
     @user = User.where(:id => 2).first
     @admin = User.where(:admin => true).first
   end
