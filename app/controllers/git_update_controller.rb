@@ -3,20 +3,36 @@ class GitUpdateController < ApplicationController
 
   before_filter :find_project, :find_user
   
-  def index
-    project = @project
+  def create_branch
+    logger.debug "User.current = #{User.current.inspect}"
+    logger.debug "@project = #{@project.inspect}"
+    if User.current.allowed_to?(:create_branch, @project)
+      render_api_ok
+    else
+      render_403
+    end
   end
   
   def find_project
-    render_404 if params[:proj_name].nil?
+    if params[:proj_name].nil?
+      render_404
+      return false
+    end
         
     @project = Project.where(:name => params[:proj_name]).first
-    render_404 if @project.nil?
+    if @project.nil?
+      render_404 
+      return false
+    end
+    true
   end
   
   def find_user
-    render_403 if params[:user_name].nil?
-    @user = User.wheare(:name => params[:user_name]).first
-    render_403 if @user.nil?
+    if params[:user_name].nil?
+      render_403
+      return false
+    end
+    User.current = User.where(:login => params[:user_name]).first
+    true
   end
 end
