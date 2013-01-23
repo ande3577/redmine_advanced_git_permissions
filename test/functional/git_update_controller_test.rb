@@ -15,21 +15,21 @@ class GitUpdateControllerTest < ActionController::TestCase
   
   # Replace this with your real tests.
   def test_invalid_project
-    get(:create_branch, {:branch_name => "master", :proj_name => "invalid_project", :user_name => @user.login})
+    get(:create_branch, {:branch => "master", :proj_name => "invalid_project", :user_name => @user.login})
     assert_response :missing, "Invalid Project"
   end
   
   def test_no_user
-    get(:create_branch, {:branch_name => "master", :proj_name => Project.first.name})
+    get(:create_branch, {:branch => "master", :proj_name => Project.first.name})
     assert_response 403, "no user id present"
   end
   
   def test_create_branch
-    get(:create_branch, {:branch_name => "master", :proj_name => Project.first.name, :user_name => @user.login})
+    get(:create_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
     assert_response 403, "create branch without permission"
       
     Role.find(1).add_permission! :create_branch
-    get(:create_branch, {:branch_name => "master", :proj_name => Project.first.name, :user_name => @user.login})
+    get(:create_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
     assert_response :success, "create branch with permission"
     
     get(:create_branch, {:proj_name => Project.first.name, :user_name => @user.login})
