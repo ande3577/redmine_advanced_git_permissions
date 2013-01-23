@@ -6,7 +6,10 @@ class GitUpdateController < ApplicationController
   def create_branch
     logger.debug "User.current = #{User.current.inspect}"
     logger.debug "@project = #{@project.inspect}"
-    if User.current.allowed_to?(:create_branch, @project)
+    
+    if params[:branch].nil?
+      render_404
+    elsif User.current.allowed_to?(:create_branch, @project)
       render_api_ok
     else
       render_403
