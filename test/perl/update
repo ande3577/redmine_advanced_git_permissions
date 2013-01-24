@@ -4,7 +4,7 @@ my $redmine_url = "http://0.0.0.0:3000";
 my $ws_key = "000000";
 
 # Set to true to diagnose issues, false to reduce clutter
-my $verbose = 0;
+my $verbose = 1;
 my $test = 1;
 
 if ($verbose) {
@@ -70,17 +70,21 @@ sub read_url {
 }
 
 sub allow_create_branch {
-	$url = "$redmine_url/$project/git/branch/create?user_name=$user&branch=$short_name&key=$ws_key";
+	$url = "$redmine_url/$project/git/branch/create?user_name=$user&branch=$_[0]&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }
 
 sub allow_delete_branch {
-  return 0;
+	$url = "$redmine_url/$project/git/branch/delete?user_name=$user&branch=$_[0]&key=$ws_key";
+	print "url = $url\n" 	if ($verbose);
+  return read_url($url);
 }
 
 sub allow_update_branch {
-  return 0;
+	$url = "$redmine_url/$project/git/branch/update?user_name=$user&branch=$_[0]&ff=$_[1]&key=$ws_key";
+	print "url = $url\n" 	if ($verbose);
+  return read_url($url);
 }
 
 sub allow_create_tag {

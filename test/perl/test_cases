@@ -1,15 +1,22 @@
 #!/usr/bin/sh
 
 # example creating new branch
-echo Authorized user: should pass
+echo "  Create Branch: Authorized user: should pass"
 perl update refs/heads/master 0000000000000000000000000000000000000000 fc404c4a18e60dffaaf18490e05445758bd706ec admin test
-echo Unauthorized user: should fail
+echo "  Create Branch: Unauthorized user: should fail"
 perl update refs/heads/master 0000000000000000000000000000000000000000 fc404c4a18e60dffaaf18490e05445758bd706ec reporter test
 
+# example deleting branch
+echo "  Create Branch: Authorized user: should pass"
+perl update refs/heads/master fc404c4a18e60dffaaf18490e05445758bd706ec 0000000000000000000000000000000000000000 admin test
+echo "  Create Branch: Unauthorized user: should fail"
+perl update refs/heads/master fc404c4a18e60dffaaf18490e05445758bd706ec 0000000000000000000000000000000000000000 reporter test
+
+
 # example update existing branch
-echo Authorized user: should pass
+echo "  Update Branch: Authorized user: should pass"
 perl update refs/heads/master 8bcd028122a9e9a27cabe8d43c7355d4a17d9c32 fc404c4a18e60dffaaf18490e05445758bd706ec  admin test
-echo Unauthorized user: should fail
+echo "  Update Branch: Unauthorized user: should fail"
 perl update refs/heads/master 8bcd028122a9e9a27cabe8d43c7355d4a17d9c32 fc404c4a18e60dffaaf18490e05445758bd706ec  reporter test
 
 
