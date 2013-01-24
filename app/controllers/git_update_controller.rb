@@ -39,6 +39,14 @@ class GitUpdateController < ApplicationController
     render_api_ok
   end
   
+  def update_tag
+    if params[:annotated].nil?
+      render_404
+    else
+      render_api_ok
+    end
+  end
+  
 private 
   def find_project
     if params[:proj_name].nil?

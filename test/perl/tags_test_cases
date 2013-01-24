@@ -16,3 +16,4 @@ echo "  Delete Tag: Authorized user: should pass"
 perl update refs/tags/annotated_tag $ANNOTATED_TAG_SHA $ZER0 admin test
 echo "  Delete Tag: Unauthorized user: should fail"
 perl update refs/tags/annotated_tag $ANNOTATED_TAG_SHA $ZER0 reporter test
+
