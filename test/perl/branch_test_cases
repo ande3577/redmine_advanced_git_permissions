@@ -1,0 +1,29 @@
+#!/usr/bin/sh
+
+ZER0=0000000000000000000000000000000000000000
+
+COMMIT_1=`git log master --format=%H -n1`
+COMMIT_2=`git log master~ --format=%H -n1`
+
+# example creating new branch
+echo "  Create Branch: Authorized user: should pass"
+perl update refs/heads/master $ZER0 $COMMIT_2 admin test
+echo "  Create Branch: Unauthorized user: should fail"
+perl update refs/heads/master $ZER0 $COMMIT_2 reporter test
+
+# example deleting branch
+echo "  Create Branch: Authorized user: should pass"
+perl update refs/heads/master $COMMIT_2 $ZER0 admin test
+echo "  Create Branch: Unauthorized user: should fail"
+perl update refs/heads/master $COMMIT_2 $ZER0 reporter test
+
+
+# example update existing branch
+echo "  Update Branch: Authorized user: should pass"
+perl update refs/heads/master $COMMIT_1 $COMMIT_2  admin test
+echo "  Update Branch: Unauthorized user: should fail"
+perl update refs/heads/master $COMMIT_1 $COMMIT_2  reporter test
+echo "  Non-FF Update Branch: Authorized user: should pass"
+perl update refs/heads/master $COMMIT_2 $COMMIT_1 admin test
+echo "  Non-FF Update Branch: Unauthorized user: should fail"
+perl update refs/heads/master $COMMIT_2 $COMMIT_1 reporter test

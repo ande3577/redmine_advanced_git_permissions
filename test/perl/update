@@ -94,7 +94,9 @@ sub allow_create_tag {
 }
 
 sub allow_delete_tag {
-  return 0;
+	$url = "$redmine_url/$project/git/tag/delete?user_name=$user&tag=$_[0]&key=$ws_key";
+	print "url = $url\n" 	if ($verbose);
+  return read_url($url);
 }
 
 sub allow_move_tag {
