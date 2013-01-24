@@ -7,6 +7,7 @@ class GitUpdateController < ApplicationController
   append_before_filter :authorize, :except => :update_branch
   append_before_filter :validate_branch, :only => [ :create_branch, :delete_branch, :update_branch ]
   append_before_filter :validate_tag, :only => [ :create_tag, :delete_tag, :update_tag ]
+  append_before_filter :require_annotated, :only => [:create_tag, :update_tag]
     
   def create_branch
     render_api_ok
@@ -20,7 +21,7 @@ class GitUpdateController < ApplicationController
     fast_forward = params[:ff]
     if fast_forward.nil?
       render_404
-    elsif !fast_forward and !User.current.allowed_to?(:non_ff_update, @project)
+    elsif (fast_forward.empty? or fast_forward == "0") and !User.current.allowed_to?(:non_ff_update, @project)
       render_403
     else
       render_api_ok
@@ -28,11 +29,7 @@ class GitUpdateController < ApplicationController
   end
   
   def create_tag
-    if params[:annotated].nil?
-      render_404
-    else
-      render_api_ok
-    end
+    render_api_ok
   end
   
   def delete_tag
@@ -40,11 +37,7 @@ class GitUpdateController < ApplicationController
   end
   
   def update_tag
-    if params[:annotated].nil?
-      render_404
-    else
-      render_api_ok
-    end
+    render_api_ok
   end
   
 private 
@@ -94,6 +87,17 @@ private
        render_404
        return false
     elsif protected_tag(params[:tag]) and !User.current().allowed_to?(:update_protected_tag, @project)
+      render_403
+      return false
+    end
+    true
+  end
+  
+  def require_annotated
+    if params[:annotated].nil?
+      render_404
+      return false
+    elsif params[:annotated].empty? or params[:annotated] == "0" 
       render_403
       return false
     end

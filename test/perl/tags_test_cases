@@ -3,7 +3,7 @@
 ZER0=0000000000000000000000000000000000000000
 
 ANNOTATED_TAG_SHA=`git rev-parse annotated_tag`
-UNANNOTED_TAG_SHA=`git rev-parse unannotated_tag`
+UNANNOTATED_TAG_SHA=`git rev-parse unannotated_tag`
 
 #example creating new tag
 echo "  Create Tag: Authorized user: should pass"
@@ -19,15 +19,15 @@ perl update refs/tags/annotated_tag $ANNOTATED_TAG_SHA $ZER0 reporter test
 
 #example updating tag
 echo "  Create Tag: Authorized user: should pass"
-perl update refs/tags/annotated_tag $UNANNOTED_TAG_SHA $ANNOTATED_TAG_SHA admin test
+perl update refs/tags/annotated_tag $UNANNOTATED_TAG_SHA $ANNOTATED_TAG_SHA admin test
 echo "  Create Tag: Unauthorized user: should fail"
-perl update refs/tags/annotated_tag $UNANNOTED_TAG_SHA $ANNOTATED_TAG_SHA reporter test
+perl update refs/tags/annotated_tag $UNANNOTATED_TAG_SHA $ANNOTATED_TAG_SHA reporter test
 
 #example creating unannotated tag
-echo "  Create unannoted tag"
-perl update refs/tags/unannotated_tag $ZER0 $UNANNOTED_TAG_SHA admin test
+echo "  Create unannotated tag"
+perl update refs/tags/unannotated_tag $ZER0 $UNANNOTATED_TAG_SHA admin test
 
 OLD_TAG_SHA=`git rev-parse unannotated_tag~`
-echo "  Create unannoted tag"
-perl update refs/tags/unannotated_tag $OLD_TAG_SHA $UNANNOTED_TAG_SHA admin test
+echo "  update unannotated tag"
+perl update refs/tags/unannotated_tag $OLD_TAG_SHA $UNANNOTATED_TAG_SHA admin test
 

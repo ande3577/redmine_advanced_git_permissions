@@ -9,6 +9,8 @@ Redmine::Plugin.register :redmine_advanced_git_permissions do
     permission :update_tag, :git_update => :update_tag 
   end
   
+  settings :default => {:require_annotated_tag => 'true'}, :partial => 'settings/advanced_git_permissions'
+  
   name 'Redmine Advanced Git Permissions plugin'
   author 'Author name'
   description 'This is a plugin for Redmine'

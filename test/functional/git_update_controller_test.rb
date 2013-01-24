@@ -46,27 +46,30 @@ class GitUpdateControllerTest < ActionController::TestCase
   end
   
   def test_update_branch
-    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => true })
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "1" })
     assert_response 403, "update branch without permission"
       
-    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :ff => true })
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :ff => "1" })
     assert_response 200, "update branch as admin"
       
     Role.find(1).add_permission! :commit_access
-    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => true })
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "1" })
     assert_response 200, "update branch with permission"
       
     get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
     assert_response 404, "update branch without specifying ff"
       
-    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => false })
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "0" })
     assert_response 403, "non-ff update without permission"
       
-    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :ff => false })
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "" })
+    assert_response 403, "non-ff update with empty param"
+      
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :ff => "0" })
     assert_response :success, "non-ff update as admin"
       
     Role.find(1).add_permission! :non_ff_update
-    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => false })
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "0" })
     assert_response :success, "non-ff update with permission"
       
   end
@@ -92,21 +95,27 @@ class GitUpdateControllerTest < ActionController::TestCase
     Role.find(1).add_permission! :commit_access
     
     # create tag without permission
-    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => true} )
+    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => "1"} )
     assert_response 403, "create tag without permission"
      
-    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => true} )
+    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => "1"} )
     assert_response :success, "create tag as admin"
    
     Role.find(1).add_permission! :create_tag
-    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => true} )
+    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => "1"} )
     assert_response :success, "create tag with permission"
     
-    get(:create_tag, {:proj_name => Project.first.name, :user_name => @admin.login, :annotated => true} )
+    get(:create_tag, {:proj_name => Project.first.name, :user_name => @admin.login, :annotated => "1"} )
     assert_response :missing, "create tag without specifying name"
       
     get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login} )
     assert_response :missing, "create tag without specifying annotated"
+    
+    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => "0"} )
+    assert_response 403, "create unannotated tag"
+      
+    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => ""} )
+    assert_response 403, "create unannotated tag, empty param"
     
   end
   
@@ -133,17 +142,17 @@ class GitUpdateControllerTest < ActionController::TestCase
     Role.find(1).add_permission! :commit_access
     
     # update tag without permission
-    get(:update_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => true } )
+    get(:update_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => "1" } )
     assert_response 403, "update tag without permission"
       
-    get(:update_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => true} )
+    get(:update_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => "1"} )
     assert_response :success, "update tag as admin"
       
     Role.find(1).add_permission! :update_tag
-    get(:update_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => true} )
+    get(:update_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => "1"} )
     assert_response :success, "update tag with permission"
       
-    get(:update_tag, {:proj_name => Project.first.name, :user_name => @admin.login, :annotated => true} )
+    get(:update_tag, {:proj_name => Project.first.name, :user_name => @admin.login, :annotated => "1"} )
     assert_response :missing, "update tag without specifying name"
       
     get(:update_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login} )

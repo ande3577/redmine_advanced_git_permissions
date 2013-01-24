@@ -4,7 +4,7 @@ my $redmine_url = "http://0.0.0.0:3000";
 my $ws_key = "000000";
 
 # Set to true to diagnose issues, false to reduce clutter
-my $verbose = 1;
+my $verbose = 0;
 my $test = 1;
 
 if ($verbose) {
