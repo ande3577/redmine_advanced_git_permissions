@@ -92,13 +92,21 @@ class GitUpdateControllerTest < ActionController::TestCase
     Role.find(1).add_permission! :commit_access
     
     # create tag without permission
-    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login} )
-    assert_response 403, "crate tag without permission"
+    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => true} )
+    assert_response 403, "create tag without permission"
      
-#    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login} )
-#    assert_response 403, "crate tag as admin"
+    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => true} )
+    assert_response :success, "create tag as admin"
    
     Role.find(1).add_permission! :create_tag
+    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => true} )
+    assert_response :success, "create tag with permission"
+    
+    get(:create_tag, {:proj_name => Project.first.name, :user_name => @admin.login, :annotated => true} )
+    assert_response :missing, "create tag without specifying name"
+      
+    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login} )
+    assert_response :missing, "create tag without specifying annotated"
     
   end
   
