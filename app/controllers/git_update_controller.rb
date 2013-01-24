@@ -28,7 +28,11 @@ class GitUpdateController < ApplicationController
   end
   
   def create_tag
-    render_api_ok
+    if params[:annotated].nil?
+      render_404
+    else
+      render_api_ok
+    end
   end
   
   def delete_tag
