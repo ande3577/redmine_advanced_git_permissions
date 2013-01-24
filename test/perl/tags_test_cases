@@ -23,3 +23,11 @@ perl update refs/tags/annotated_tag $UNANNOTED_TAG_SHA $ANNOTATED_TAG_SHA admin 
 echo "  Create Tag: Unauthorized user: should fail"
 perl update refs/tags/annotated_tag $UNANNOTED_TAG_SHA $ANNOTATED_TAG_SHA reporter test
 
+#example creating unannotated tag
+echo "  Create unannoted tag"
+perl update refs/tags/unannotated_tag $ZER0 $UNANNOTED_TAG_SHA admin test
+
+OLD_TAG_SHA=`git rev-parse unannotated_tag~`
+echo "  Create unannoted tag"
+perl update refs/tags/unannotated_tag $OLD_TAG_SHA $UNANNOTED_TAG_SHA admin test
+
