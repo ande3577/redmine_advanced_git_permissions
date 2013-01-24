@@ -28,6 +28,8 @@ class GitUpdateControllerTest < ActionController::TestCase
   end
   
   def test_create_branch
+    Role.find(1).add_permission! :commit_access
+    
     get(:create_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
     assert_response 403, "create branch without permission"
       
@@ -44,9 +46,6 @@ class GitUpdateControllerTest < ActionController::TestCase
   end
   
   def test_update_branch
-    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
-    assert_response 404, "update branch without specifying ff"
-      
     get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => true })
     assert_response 403, "update branch without permission"
       
@@ -56,6 +55,9 @@ class GitUpdateControllerTest < ActionController::TestCase
     Role.find(1).add_permission! :commit_access
     get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => true })
     assert_response 200, "update branch with permission"
+      
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
+    assert_response 404, "update branch without specifying ff"
       
     get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => false })
     assert_response 403, "non-ff update without permission"
@@ -70,18 +72,6 @@ class GitUpdateControllerTest < ActionController::TestCase
   end
   
   def test_delete_branch
-    get(:delete_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
-    assert_response 403, "delete branch without permission"
-      
-    get(:delete_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login})
-    assert_response :success, "delete branch as admin"
-      
-    Role.find(1).add_permission! :delete_branch
-    get(:delete_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
-    assert_response :success, "delete branch with permission"
-    
-    get(:delete_branch, {:proj_name => Project.first.name, :user_name => @user.login})
-    assert_response :missing, "delete branch without passing name"
   end
   
   def test_create_tag

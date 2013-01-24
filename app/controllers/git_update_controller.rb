@@ -2,7 +2,7 @@ class GitUpdateController < ApplicationController
   unloadable
 
   skip_before_filter :check_if_login_required
-  before_filter :find_project, :find_user
+  before_filter :find_project, :find_user, :require_commit_access
   
   append_before_filter :validate_branch, :only => [ :create_branch, :delete_branch, :update_branch ]
   append_before_filter :validate_tag, :only => [ :create_tag, :delete_tag, :update_tag ]
@@ -27,8 +27,6 @@ class GitUpdateController < ApplicationController
     fast_forward = params[:ff]
     if fast_forward.nil?
       render_404
-    elsif !User.current.allowed_to?(:commit_access, @project)
-      render_403
     elsif !fast_forward and !User.current.allowed_to?(:non_ff_update, @project)
       render_403
     else
@@ -59,6 +57,13 @@ private
     end
     User.current = User.where(:login => params[:user_name]).first
     true
+  end
+  
+  def require_commit_access
+    if !User.current.allowed_to?(:commit_access, @project)
+        render_403
+        return false 
+    end
   end
   
   def validate_branch
