@@ -1,6 +1,7 @@
 class GitUpdateController < ApplicationController
   unloadable
 
+  skip_before_filter :check_if_login_required
   before_filter :find_project, :find_user
   
   append_before_filter :validate_branch, :only => [ :create_branch, :delete_branch, :update_branch ]
