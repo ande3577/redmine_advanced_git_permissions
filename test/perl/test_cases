@@ -18,5 +18,8 @@ echo "  Update Branch: Authorized user: should pass"
 perl update refs/heads/master 8bcd028122a9e9a27cabe8d43c7355d4a17d9c32 fc404c4a18e60dffaaf18490e05445758bd706ec  admin test
 echo "  Update Branch: Unauthorized user: should fail"
 perl update refs/heads/master 8bcd028122a9e9a27cabe8d43c7355d4a17d9c32 fc404c4a18e60dffaaf18490e05445758bd706ec  reporter test
-
+echo "  Non-FF Update Branch: Authorized user: should fail"
+perl update refs/heads/master fc404c4a18e60dffaaf18490e05445758bd706ec 8bcd028122a9e9a27cabe8d43c7355d4a17d9c32 admin test
+echo "  Non-FF Update Branch: Unauthorized user: should fail"
+perl update refs/heads/master fc404c4a18e60dffaaf18490e05445758bd706ec 8bcd028122a9e9a27cabe8d43c7355d4a17d9c32 reporter test
 
