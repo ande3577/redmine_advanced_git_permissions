@@ -2,6 +2,7 @@
 
 my $redmine_url = "http://0.0.0.0:3000";
 my $ws_key = "000000";
+my $git_root = "/var/www/git";
 
 # Set to true to diagnose issues, false to reduce clutter
 my $verbose = 0;
@@ -11,15 +12,12 @@ if ($verbose) {
   use warnings;
 }
 
-my $ref_name = $ARGV[0];
-my $old_ref = $ARGV[1];
-my $new_ref = $ARGV[2];
-my $user = $test ? $ARGV[3] : $ENV{'GIT_COMMITTER_NAME'};
-my $project = $ARGV[4] if ($test);
-
-
-my $zero="0000000000000000000000000000000000000000";
-
+sub get_project_identifier {
+  my $location = $_[0];
+  $location =~ s/\.git$//;
+  my ($identifier) = $location =~ m{^$git_root/*([^/.]+)};
+  $identifier;
+}
 
 sub trim($)
 {
@@ -28,6 +26,18 @@ sub trim($)
 	$string =~ s/\s+$//;
 	return $string;
 }
+
+my $ref_name = $ARGV[0];
+my $old_ref = $ARGV[1];
+my $new_ref = $ARGV[2];
+my $user = $test ? $ARGV[3] : $ENV{'GIT_COMMITTER_NAME'};
+my $work_dir = $test ? "/var/www/git/test.repository.git" : trim(`pwd -D`);
+my $repository = get_repository_name($work_dir);
+my $project = get_project_identifier($work_dir);
+
+
+my $zero="0000000000000000000000000000000000000000";
+
 
 sub grant {
   if($verbose) {
@@ -43,13 +53,16 @@ sub deny {
   exit(0);
 }
 
-sub get_project_identifier {
-    my $r = shift;
+sub get_repository_name {
+ my $location = $_[0];
+  my ($repository) = $location =~ m{^$git_root/*(.+)};
+  $repository;
+}
 
-    my $cfg = Apache2::Module::get_config(__PACKAGE__, $r->server, $r->per_dir_config);
-    my $location = $r->location;
-    $location =~ s/\.git$// if (defined $cfg->{RedmineGitSmartHttp} and $cfg->{RedmineGitSmartHttp});
-    my ($identifier) = $r->uri =~ m{$location/*([^/.]+)};
+sub get_project_identifier {
+    my $location = $_[0];
+    $location =~ s/\.git$//;
+    my ($identifier) = $location =~ m{$git_root/*([^/.]+)};
     $identifier;
 }
 
@@ -70,37 +83,37 @@ sub read_url {
 }
 
 sub allow_create_branch {
-	$url = "$redmine_url/$project/git/branch/create?user_name=$user&branch=$_[0]&key=$ws_key";
+	$url = "$redmine_url/$project/git/branch/create?user_name=$user&branch=$_[0]&repository=$repository&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }
 
 sub allow_delete_branch {
-	$url = "$redmine_url/$project/git/branch/delete?user_name=$user&branch=$_[0]&key=$ws_key";
+	$url = "$redmine_url/$project/git/branch/delete?user_name=$user&branch=$_[0]&repository=$repository&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }
 
 sub allow_update_branch {
-	$url = "$redmine_url/$project/git/branch/update?user_name=$user&branch=$_[0]&ff=$_[1]&key=$ws_key";
+	$url = "$redmine_url/$project/git/branch/update?user_name=$user&branch=$_[0]&repository=$repository&ff=$_[1]&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }
 
 sub allow_create_tag {
-	$url = "$redmine_url/$project/git/tag/create?user_name=$user&tag=$_[0]&annotated=$_[1]&key=$ws_key";
+	$url = "$redmine_url/$project/git/tag/create?user_name=$user&tag=$_[0]&annotated=$_[1]&repository=$repository&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }
 
 sub allow_delete_tag {
-	$url = "$redmine_url/$project/git/tag/delete?user_name=$user&tag=$_[0]&key=$ws_key";
+	$url = "$redmine_url/$project/git/tag/delete?user_name=$user&tag=$_[0]&repository=$repository&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }
 
 sub allow_update_tag {
-	$url = "$redmine_url/$project/git/tag/update?user_name=$user&tag=$_[0]&annotated=$_[1]&key=$ws_key";
+	$url = "$redmine_url/$project/git/tag/update?user_name=$user&tag=$_[0]&annotated=$_[1]&repository=$repository&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }

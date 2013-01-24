@@ -1,0 +1,20 @@
+#!/usr/bin/perl
+
+my $git_root = "/var/www/git";
+
+sub get_repository_name {
+ my $location = $_[0];
+  my ($repository) = $location =~ m{^$git_root/*(.+)};
+  $repository;
+}
+
+sub get_project_identifier {
+  my $location = $_[0];
+  $location =~ s/\.git$//;
+  my ($identifier) = $location =~ m{^$git_root/*([^/.]+)};
+  $identifier;
+}
+
+print "repo name = ".get_repository_name($ARGV[0])."\n";
+print "project id = ".get_project_identifier($ARGV[0])."\n";
+print "working_dir = ".`pwd -P`;
