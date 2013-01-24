@@ -3,6 +3,7 @@ Redmine::Plugin.register :redmine_advanced_git_permissions do
     permission :create_branch, :git_update => :create_branch
     permission :delete_branch, :git_update => :delete_branch
     permission :update_protected_branch, :git_update => :update_branch
+    permission :non_ff_update, :git_update => :update_branch
     permission :create_tag, :git_update => :create_tag
     permission :delete_tag, :git_update => :delete_tag
     permission :update_tag, :git_update => :update_tag 

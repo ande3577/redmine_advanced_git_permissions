@@ -23,6 +23,20 @@ class GitUpdateController < ApplicationController
     end
   end
   
+  def update_branch
+    fast_forward = params[:ff]
+    if fast_forward.nil?
+      render_404
+    elsif !User.current.allowed_to?(:commit_access, @project)
+      render_403
+    elsif !fast_forward and !User.current.allowed_to?(:non_ff_update, @project)
+      render_403
+    else
+      render_api_ok
+    end
+      
+  end
+  
 private 
   def find_project
     if params[:proj_name].nil?

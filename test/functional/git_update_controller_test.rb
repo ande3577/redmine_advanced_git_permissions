@@ -44,6 +44,29 @@ class GitUpdateControllerTest < ActionController::TestCase
   end
   
   def test_update_branch
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
+    assert_response 404, "update branch without specifying ff"
+      
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => true })
+    assert_response 403, "update branch without permission"
+      
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :ff => true })
+    assert_response 200, "update branch as admin"
+      
+    Role.find(1).add_permission! :commit_access
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => true })
+    assert_response 200, "update branch with permission"
+      
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => false })
+    assert_response 403, "non-ff update without permission"
+      
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :ff => false })
+    assert_response :success, "non-ff update as admin"
+      
+    Role.find(1).add_permission! :non_ff_update
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => false })
+    assert_response :success, "non-ff update with permission"
+      
   end
   
   def test_delete_branch
