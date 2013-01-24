@@ -99,8 +99,10 @@ sub allow_delete_tag {
   return read_url($url);
 }
 
-sub allow_move_tag {
-  return 0;
+sub allow_update_tag {
+	$url = "$redmine_url/$project/git/tag/update?user_name=$user&tag=$_[0]&annotated=$_[1]&key=$ws_key";
+	print "url = $url\n" 	if ($verbose);
+  return read_url($url);
 }
 
 my $commit_type;
@@ -150,7 +152,6 @@ if ($ref_name  =~ "^refs/heads/") {
 } elsif ($ref_name  =~ "^refs/tags/") {
   $short_name = $ref_name;
   $short_name =~ s/refs\/tags\///;
-
   if ( $verbose ) { print("$short_name is a tag\n"); }
   if ( $new_ref eq $zero ) {
   	if ( allow_delete_tag($short_name) ) {
@@ -159,7 +160,7 @@ if ($ref_name  =~ "^refs/heads/") {
 	  	deny("Cannot delete tags");
 	 	}
   } elsif ( $old_ref ne $zero ) {
-  	if ( allow_update_tag($short_name) ) {
+  	if ( allow_update_tag($short_name, $commit_type eq "tag") ) {
   		grant("Permission granted");  	
     } else {
 	    deny("Cannot move tags");
