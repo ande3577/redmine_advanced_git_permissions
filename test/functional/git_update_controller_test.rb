@@ -116,6 +116,10 @@ class GitUpdateControllerTest < ActionController::TestCase
       
     get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => ""} )
     assert_response 403, "create unannotated tag, empty param"
+      
+    Setting.plugin_redmine_advanced_git_permissions[:require_annotated_tag] = false
+    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => ""} )
+    assert_response 200, "create unannotated tag, when allowed"
     
   end
   

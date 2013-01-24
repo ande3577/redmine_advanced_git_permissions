@@ -97,7 +97,7 @@ private
     if params[:annotated].nil?
       render_404
       return false
-    elsif params[:annotated].empty? or params[:annotated] == "0" 
+    elsif (params[:annotated].empty? or params[:annotated] == "0") and Setting.plugin_redmine_advanced_git_permissions[:require_annotated_tag] 
       render_403
       return false
     end
