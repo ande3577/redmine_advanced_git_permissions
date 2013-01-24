@@ -31,6 +31,10 @@ class GitUpdateController < ApplicationController
     render_api_ok
   end
   
+  def delete_tag
+    render_api_ok
+  end
+  
 private 
   def find_project
     if params[:proj_name].nil?

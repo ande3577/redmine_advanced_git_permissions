@@ -110,10 +110,26 @@ class GitUpdateControllerTest < ActionController::TestCase
     
   end
   
-  def test_update_tag
+  def test_delete_tag
+    Role.find(1).add_permission! :commit_access
+    
+    # create tag without permission
+    get(:delete_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login } )
+    assert_response 403, "delete tag without permission"
+      
+    get(:delete_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login } )
+    assert_response :success, "delete tag as admin"
+      
+    Role.find(1).add_permission! :delete_tag
+    get(:delete_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login } )
+    assert_response :success, "delete tag with permission"
+    
+    get(:delete_tag, {:proj_name => Project.first.name, :user_name => @admin.login } )
+    assert_response :missing, "delete tag without specifying name"
+    
   end
   
-  def test_delete_tag
+  def test_update_tag
   end
   
 end
