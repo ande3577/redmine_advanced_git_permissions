@@ -78,7 +78,7 @@ private
   end
   
   def validate_tag
-    if params[:tag].nil? or !legal_branch(params[:tag])
+    if params[:tag].nil? or !legal_tag(params[:tag])
        render_404
        return false
     elsif protected_tag(params[:tag]) and !User.current().allowed_to?(:update_protected_tag, @project)

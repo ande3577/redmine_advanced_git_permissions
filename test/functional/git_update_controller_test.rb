@@ -72,6 +72,20 @@ class GitUpdateControllerTest < ActionController::TestCase
   end
   
   def test_delete_branch
+    Role.find(1).add_permission! :commit_access
+    
+    get(:delete_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
+    assert_response 403, "delete branch without permission"
+      
+    get(:delete_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login})
+    assert_response :success, "delete branch as admin"
+      
+    Role.find(1).add_permission! :delete_branch
+    get(:delete_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login})
+    assert_response :success, "delete branch with permission"
+    
+    get(:delete_branch, {:proj_name => Project.first.name, :user_name => @user.login})
+    assert_response :missing, "delete branch without passing name"
   end
   
   def test_create_tag
