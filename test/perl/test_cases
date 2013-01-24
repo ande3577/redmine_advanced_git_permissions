@@ -1,9 +1,15 @@
 #!/usr/bin/sh
 
 # example creating new branch
+echo Authorized user: should pass
 perl update refs/heads/master 0000000000000000000000000000000000000000 fc404c4a18e60dffaaf18490e05445758bd706ec admin test
+echo Unauthorized user: should fail
 perl update refs/heads/master 0000000000000000000000000000000000000000 fc404c4a18e60dffaaf18490e05445758bd706ec reporter test
 
 # example update existing branch
-# perl update refs/heads/master 8bcd028122a9e9a27cabe8d43c7355d4a17d9c32 fc404c4a18e60dffaaf18490e05445758bd706ec
+echo Authorized user: should pass
+perl update refs/heads/master 8bcd028122a9e9a27cabe8d43c7355d4a17d9c32 fc404c4a18e60dffaaf18490e05445758bd706ec  admin test
+echo Unauthorized user: should fail
+perl update refs/heads/master 8bcd028122a9e9a27cabe8d43c7355d4a17d9c32 fc404c4a18e60dffaaf18490e05445758bd706ec  reporter test
+
 
