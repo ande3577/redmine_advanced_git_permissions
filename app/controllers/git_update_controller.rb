@@ -2,25 +2,18 @@ class GitUpdateController < ApplicationController
   unloadable
 
   skip_before_filter :check_if_login_required
-  before_filter :find_project, :find_user, :require_commit_access
+  before_filter :find_project, :find_user, :require_commit_access 
   
+  append_before_filter :authorize, :except => :update_branch
   append_before_filter :validate_branch, :only => [ :create_branch, :delete_branch, :update_branch ]
   append_before_filter :validate_tag, :only => [ :create_tag, :delete_tag, :update_tag ]
     
   def create_branch
-    if User.current.allowed_to?(:create_branch, @project)
-      render_api_ok
-    else
-      render_403
-    end
+    render_api_ok
   end
   
   def delete_branch
-    if User.current.allowed_to?(:delete_branch, @project)
-      render_api_ok
-    else
-      render_403
-    end
+    render_api_ok
   end
   
   def update_branch
@@ -32,7 +25,10 @@ class GitUpdateController < ApplicationController
     else
       render_api_ok
     end
-      
+  end
+  
+  def create_tag
+    render_api_ok
   end
   
 private 
@@ -102,6 +98,10 @@ private
   
   def protected_tag(tag)
     false
+  end
+  
+  def deny_access
+    render_403
   end
   
 end

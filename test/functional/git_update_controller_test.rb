@@ -89,6 +89,17 @@ class GitUpdateControllerTest < ActionController::TestCase
   end
   
   def test_create_tag
+    Role.find(1).add_permission! :commit_access
+    
+    # create tag without permission
+    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login} )
+    assert_response 403, "crate tag without permission"
+     
+#    get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login} )
+#    assert_response 403, "crate tag as admin"
+   
+    Role.find(1).add_permission! :create_tag
+    
   end
   
   def test_update_tag
