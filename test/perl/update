@@ -88,7 +88,9 @@ sub allow_update_branch {
 }
 
 sub allow_create_tag {
-  return 0;
+	$url = "$redmine_url/$project/git/tag/create?user_name=$user&tag=$_[0]&annotated=$_[1]&key=$ws_key";
+	print "url = $url\n" 	if ($verbose);
+  return read_url($url);
 }
 
 sub allow_delete_tag {
@@ -148,14 +150,22 @@ if ($ref_name  =~ "^refs/heads/") {
   $short_name =~ s/refs\/tags\///;
 
   if ( $verbose ) { print("$short_name is a tag\n"); }
-  if ( $new_ref eq $zero && !allow_delete_tag($short_name) ) {
-    deny("Cannot delete tags");
-  } elsif ( $old_ref ne $zero && !allow_update_tag($short_name) ) {
-    deny("Cannot move tags");
-  } elsif ( allow_create_tag($short_name, $commit_type ne "tag") ) {
+  if ( $new_ref eq $zero ) {
+  	if ( allow_delete_tag($short_name) ) {
+	    grant("Permission granted");
+	  } else {
+	  	deny("Cannot delete tags");
+	 	}
+  } elsif ( $old_ref ne $zero ) {
+  	if ( allow_update_tag($short_name) ) {
+  		grant("Permission granted");  	
+    } else {
+	    deny("Cannot move tags");
+    }
+  } elsif ( allow_create_tag($short_name, $commit_type eq "tag") ) {
   	grant("Permission granted");
   } else {
-    deny("Cannot create unannotated tag");
+    deny("Cannot create tag");
   } 
 } else {
   deny ("$ref_name is not a branch or tag.");
