@@ -1,0 +1,6 @@
+<h3><%= l(:advanced_git_permissions_settings_general_title) %></h3>
+<p>
+	<%= content_tag(:label, l(:label_require_annotated_tag)) %>
+	<%= check_box_tag "settings[require_annotated_tag]", 1, Setting.plugin_redmine_advanced_git_permissions[:require_annotated_tag] ? true : false %>
+	<%= hidden_field_tag "settings[dummy_setting]" %>
+</p>

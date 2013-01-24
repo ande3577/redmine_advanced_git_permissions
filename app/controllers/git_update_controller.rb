@@ -94,10 +94,14 @@ private
   end
   
   def require_annotated
+    required = Setting.plugin_redmine_advanced_git_permissions[:require_annotated_tag] ? true : false
+    logger.debug "setting = #{Setting.plugin_redmine_advanced_git_permissions[:require_annotated_tag]}"
+    logger.debug "required = #{required.inspect}"
+    
     if params[:annotated].nil?
       render_404
       return false
-    elsif (params[:annotated].empty? or params[:annotated] == "0") and Setting.plugin_redmine_advanced_git_permissions[:require_annotated_tag] 
+    elsif (params[:annotated].empty? or params[:annotated] == "0") and required 
       render_403
       return false
     end
