@@ -2,7 +2,7 @@
 
 my $redmine_url = "http://0.0.0.0:3000";
 my $ws_key = "000000";
-my $git_root = "/var/www/git";
+my $git_root = "/var/www/git/";
 
 # Set to true to diagnose issues, false to reduce clutter
 my $verbose = 0;
@@ -10,6 +10,12 @@ my $test = 1;
 
 if ($verbose) {
   use warnings;
+}
+
+sub get_repository_name {
+ my $location = $_[0];
+  my ($repository) = $location =~ m{^$git_root/*(.+)};
+  $repository;
 }
 
 sub get_project_identifier {

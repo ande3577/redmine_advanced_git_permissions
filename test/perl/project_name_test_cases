@@ -1,0 +1,11 @@
+#!/usr/bin/sh
+
+
+perl test_project_name "/var/www/git/project-id.git"
+perl test_project_name "/var/www/git/project-id.repository_id.git"
+perl test_project_name "/var/www/git/project-id/repository_id.git"
+perl test_project_name "/var/www/git/project-id/repository/id.git"
+perl test_project_name "/var/www/git/project-id"
+perl test_project_name "/var/www/git/project-id/.git"
+perl test_project_name "/var/www/gita/project-id/.git"
+
