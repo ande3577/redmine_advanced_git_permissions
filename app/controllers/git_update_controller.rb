@@ -72,7 +72,7 @@ private
     
     logger.debug "project = #{@project.inspect}"
     logger.debug "repositories = #{@project.repositories.inspect}"
-    @repository = @project.repositories.where(:url => params[:repository])).first
+    @repository = @project.repositories.where(:url => params[:repository]).first
     
     if @repository.nil?
       render_404

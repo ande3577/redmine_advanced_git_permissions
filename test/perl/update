@@ -37,7 +37,7 @@ my $ref_name = $ARGV[0];
 my $old_ref = $ARGV[1];
 my $new_ref = $ARGV[2];
 my $user = $test ? $ARGV[3] : $ENV{'GIT_COMMITTER_NAME'};
-my $work_dir = $test ? "/var/www/git/test.repository.git" : trim(`pwd -D`);
+my $work_dir = $test ? "/var/www/git/test.git" : trim(`pwd -D`);
 my $repository = $work_dir;
 my $project = get_project_identifier($work_dir);
 
