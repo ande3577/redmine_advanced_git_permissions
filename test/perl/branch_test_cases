@@ -12,9 +12,9 @@ echo "  Create Branch: Unauthorized user: should fail"
 perl update refs/heads/master $ZER0 $COMMIT_2 reporter test
 
 # example deleting branch
-echo "  Create Branch: Authorized user: should pass"
+echo "  Delete Branch: Authorized user: should pass"
 perl update refs/heads/master $COMMIT_2 $ZER0 admin test
-echo "  Create Branch: Unauthorized user: should fail"
+echo "  Delete Branch: Unauthorized user: should fail"
 perl update refs/heads/master $COMMIT_2 $ZER0 reporter test
 
 

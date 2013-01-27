@@ -38,7 +38,7 @@ my $old_ref = $ARGV[1];
 my $new_ref = $ARGV[2];
 my $user = $test ? $ARGV[3] : $ENV{'GIT_COMMITTER_NAME'};
 my $work_dir = $test ? "/var/www/git/test.repository.git" : trim(`pwd -D`);
-my $repository = get_repository_name($work_dir);
+my $repository = $work_dir;
 my $project = get_project_identifier($work_dir);
 
 
@@ -57,12 +57,6 @@ sub deny {
   ($reason) = @_;
   print("Access Denied: $reason\n");
   exit(0);
-}
-
-sub get_repository_name {
- my $location = $_[0];
-  my ($repository) = $location =~ m{^$git_root/*(.+)};
-  $repository;
 }
 
 sub get_project_identifier {
@@ -89,37 +83,37 @@ sub read_url {
 }
 
 sub allow_create_branch {
-	$url = "$redmine_url/$project/git/branch/create?user_name=$user&branch=$_[0]&repository=$repository&key=$ws_key";
+	$url = "$redmine_url/projects/$project/branch/create?user_name=$user&branch=$_[0]&repository=$repository&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }
 
 sub allow_delete_branch {
-	$url = "$redmine_url/$project/git/branch/delete?user_name=$user&branch=$_[0]&repository=$repository&key=$ws_key";
+	$url = "$redmine_url/projects/$project/branch/delete?user_name=$user&branch=$_[0]&repository=$repository&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }
 
 sub allow_update_branch {
-	$url = "$redmine_url/$project/git/branch/update?user_name=$user&branch=$_[0]&repository=$repository&ff=$_[1]&key=$ws_key";
+	$url = "$redmine_url/projects/$project/branch/update?user_name=$user&branch=$_[0]&repository=$repository&ff=$_[1]&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }
 
 sub allow_create_tag {
-	$url = "$redmine_url/$project/git/tag/create?user_name=$user&tag=$_[0]&annotated=$_[1]&repository=$repository&key=$ws_key";
+	$url = "$redmine_url/projects/$project/tag/create?user_name=$user&tag=$_[0]&annotated=$_[1]&repository=$repository&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }
 
 sub allow_delete_tag {
-	$url = "$redmine_url/$project/git/tag/delete?user_name=$user&tag=$_[0]&repository=$repository&key=$ws_key";
+	$url = "$redmine_url/projects/$project/tag/delete?user_name=$user&tag=$_[0]&repository=$repository&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }
 
 sub allow_update_tag {
-	$url = "$redmine_url/$project/git/tag/update?user_name=$user&tag=$_[0]&annotated=$_[1]&repository=$repository&key=$ws_key";
+	$url = "$redmine_url/projects/$project/tag/update?user_name=$user&tag=$_[0]&annotated=$_[1]&repository=$repository&key=$ws_key";
 	print "url = $url\n" 	if ($verbose);
   return read_url($url);
 }
