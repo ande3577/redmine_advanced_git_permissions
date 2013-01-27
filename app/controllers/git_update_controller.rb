@@ -2,7 +2,7 @@ class GitUpdateController < ApplicationController
   unloadable
 
   skip_before_filter :check_if_login_required
-  before_filter :find_project, :find_user, :require_commit_access 
+  before_filter :find_project, :find_repository, :find_user, :require_commit_access 
   
   append_before_filter :authorize, :except => :update_branch
   append_before_filter :validate_branch, :only => [ :create_branch, :delete_branch, :update_branch ]
@@ -61,6 +61,23 @@ private
       return false
     end
     User.current = User.where(:login => params[:user_name]).first
+    true
+  end
+  
+  def find_repository
+    if params[:repository].nil?
+      render_404
+      return false
+    end
+    
+    logger.debug "project = #{@project.inspect}"
+    logger.debug "repositories = #{@project.repositories.inspect}"
+    @repository = @project.repositories.where(:url => params[:repository])).first
+    
+    if @repository.nil?
+      render_404
+      return false
+    end
     true
   end
   
