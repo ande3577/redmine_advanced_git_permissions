@@ -9,13 +9,13 @@ COMMIT_2=`git rev-parse master~`
 echo "  Create Branch: Authorized user: should pass"
 perl update refs/heads/master $ZER0 $COMMIT_2 admin test
 echo "  Create Branch: Unauthorized user: should fail"
-perl update refs/heads/master $ZER0 $COMMIT_2 reporter test
+perl update refs/heads/master $ZER0 $COMMIT_2 developer test
 
 # example deleting branch
 echo "  Delete Branch: Authorized user: should pass"
 perl update refs/heads/master $COMMIT_2 $ZER0 admin test
 echo "  Delete Branch: Unauthorized user: should fail"
-perl update refs/heads/master $COMMIT_2 $ZER0 reporter test
+perl update refs/heads/master $COMMIT_2 $ZER0 developer test
 
 
 # example update existing branch

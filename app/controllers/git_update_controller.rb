@@ -20,9 +20,9 @@ class GitUpdateController < ApplicationController
   def update_branch
     fast_forward = params[:ff]
     if fast_forward.nil?
-      render_404
+      render_404 :message => :notice_git_fastforward_not_specified
     elsif (fast_forward.empty? or fast_forward == "0") and !User.current.allowed_to?(:non_ff_update, @project)
-      render_403
+      render_403 :message => :notice_git_fastforward_not_authorized
     else
       render_api_ok
     end
@@ -43,13 +43,13 @@ class GitUpdateController < ApplicationController
 private 
   def find_project
     if params[:proj_name].nil?
-      render_404
+      render_404 :message => :notice_git_project_not_specified
       return false
     end
         
     @project = Project.where(:name => params[:proj_name]).first
     if @project.nil?
-      render_404 
+      render_404  :message => :notice_git_project_not_found
       return false
     end
     true
@@ -57,7 +57,7 @@ private
   
   def find_user
     if params[:user_name].nil?
-      render_403
+      render_403 :message => :notice_git_user_not_specified
       return false
     end
     User.current = User.where(:login => params[:user_name]).first
@@ -66,7 +66,7 @@ private
   
   def find_repository
     if params[:repository].nil?
-      render_404
+      render_404 :message => :notice_git_repository_not_specified
       return false
     end
     
@@ -75,7 +75,7 @@ private
     @repository = @project.repositories.where(:url => params[:repository]).first
     
     if @repository.nil?
-      render_404
+      render_404 :message => :notice_git_repository_not_found
       return false
     end
     true
@@ -83,28 +83,40 @@ private
   
   def require_commit_access
     if !User.current.allowed_to?(:commit_access, @project)
-        render_403
+        render_403 :message => :notice_git_user_not_authorized_to_commit
         return false 
     end
   end
   
   def validate_branch
-    if params[:branch].nil? or !legal_branch(params[:branch])
-       render_404
+    if params[:branch].nil?
+       render_404 :message => :notice_git_user_not_specified
        return false
-    elsif protected_branch(params[:branch]) and !User.current().allowed_to?(:update_protected_branch, @project)
-      render_403
+    end
+
+    branch_type = @repository.evaluate_ref :branch, params[:branch]
+    if branch_type == :illegal_ref
+      render_403 :message => :notice_git_illegal_branch
+      return false    
+    elsif branch_type == :protected_ref and !User.current().allowed_to?(:update_protected_branch, @project)
+      render_403 :message => :notice_git_user_not_authorized_protected_branch
       return false
     end
     true
   end
   
   def validate_tag
-    if params[:tag].nil? or !legal_tag(params[:tag])
-       render_404
+    if params[:tag].nil?
+       render_404 :message => :notice_git_tag_not_specified
        return false
-    elsif protected_tag(params[:tag]) and !User.current().allowed_to?(:update_protected_tag, @project)
-      render_403
+    end
+       
+    tag_type = @repository.evaluate_ref :tag, params[:tag]
+    if tag_type == :illegal_ref
+       render_403 :message => :notice_git_illegal_tag
+       return false
+    elsif tag_type == :protected_ref and !User.current().allowed_to?(:update_protected_tag, @project)
+      render_403 :message => :notice_git_user_not_authorized_protected_tag
       return false
     end
     true
@@ -116,33 +128,39 @@ private
     logger.debug "required = #{required.inspect}"
     
     if params[:annotated].nil?
-      render_404
+      render_404 :message => :notice_git_annotated_not_specified
       return false
     elsif (params[:annotated].empty? or params[:annotated] == "0") and required 
-      render_403
+      render_403 :message => :notice_git_unannotated_tag_not_allowed
       return false
     end
     true
   end
 
-  def legal_branch(branch)
-    true
-  end
-
-  def protected_branch(branch)
-    false
-  end
-  
-  def legal_tag(tag)
-    true
-  end
-  
-  def protected_tag(tag)
-    false
-  end
-  
   def deny_access
-    render_403
+    logger.debug "deny access: #{params.inspect}"
+    
+    message = "hello world" # :notice_not_authorized
+    case params[:action]
+    when "create_branch"
+      message = :notice_git_cannot_create_branch
+    when "delete_branch"
+      message = :notice_git_cannot_delete_branch
+    when "create_tag"
+      message = :notice_git_cannot_create_tag
+    when "delete_tag"
+      message = :notice_git_cannot_delete_tag
+    when "update_tag"
+      message = :notice_git_cannot_update_tag
+    end
+    
+    render_403 :message => message
+  end
+  
+  def render_error(params)
+    @message = params[:message]
+    @message = l(@message) if @message.is_a?(Symbol)
+    render :text => @message, :status => params[:status]
   end
   
 end

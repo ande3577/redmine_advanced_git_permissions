@@ -1,6 +1,8 @@
 require File.expand_path('../../test_helper', __FILE__)
 #require 'Redmine/Scm/Git'
 
+require_dependency 'ref_rule'
+
 class GitUpdateControllerTest < ActionController::TestCase
   fixtures :projects
   fixtures :users
@@ -184,5 +186,56 @@ class GitUpdateControllerTest < ActionController::TestCase
     get(:update_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => "", :repository => @repository.url} )
     assert_response 200, "update_tag unannotated tag, when allowed"
   end
+  
+  def test_illegal_branch
+    illegal_rule = RefRule.create(:repository => @repository, :rule_type => :illegal_ref, :expression => '[a-z]+', :ref_type => :branch, :regex => true)
+    illegal_rule.save
+    
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :ff => "1", :repository => @repository.url })
+    assert_response 403, "update illegal branch as admin"
+  end
+  
+  def test_protected_branch
+    Role.find(1).add_permission! :commit_access
+    protected_rule = RefRule.create(:repository => @repository, :rule_type => :protected_ref, :expression => '[a-z]+', :ref_type => :branch, :regex => true)
+    protected_rule.save
+    
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "1", :repository => @repository.url })
+    assert_response 403, "update protected branch without permission" 
+      
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :ff => "1", :repository => @repository.url })
+    assert_response 200, "update protected branch as admin"
+      
+    Role.find(1).add_permission! :update_protected_branch
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "1", :repository => @repository.url })
+    assert_response 200, "update protected branch with permission" 
+  end
+  
+  def test_illegal_tag
+    illegal_rule = RefRule.create(:repository => @repository, :rule_type => :illegal_ref, :expression => '[a-z]+', :ref_type => :tag, :regex => true)
+    illegal_rule.save
+    
+    get(:update_tag, {:tag => "illegaltag", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => "1", :repository => @repository.url } )
+    assert_response 403, "update illegal"
+  end
+  
+  def test_protected_tag
+    Role.find(1).add_permission! :commit_access
+    Role.find(1).add_permission! :update_tag
+    
+    protected_rule = RefRule.create(:repository => @repository, :rule_type => :protected_ref, :expression => '[a-z]+', :ref_type => :tag, :regex => true)
+    protected_rule.save
+    
+    get(:update_tag, {:tag => "protectedtag", :proj_name => Project.first.name, :user_name => @user.login, :annotated => "1", :repository => @repository.url } )
+    assert_response 403, "update protected tag without permission"
+      
+    get(:update_tag, {:tag => "protectedtag", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => "1", :repository => @repository.url } )
+    assert_response 200, "update protected tag as admin"
+      
+    Role.find(1).add_permission! :update_protected_tag
+    get(:update_tag, {:tag => "protectedtag", :proj_name => Project.first.name, :user_name => @user.login, :annotated => "1", :repository => @repository.url } )
+    assert_response 200, "update protected tag with permission"
+  end
+  
   
 end

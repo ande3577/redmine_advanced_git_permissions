@@ -8,6 +8,8 @@ my $git_root = "/var/www/git/";
 my $verbose = 0;
 my $test = 1;
 
+my $message = "";
+
 if ($verbose) {
   use warnings;
 }
@@ -73,6 +75,7 @@ sub read_url {
 	print "reading @_\n" 	if ($verbose);
   $response = $browser->get( @_ );
   print $response->status_line if ($verbose);
+  $message = $response->content;
   if( $response->is_success ) {
 	  print "Success!!!\n" 	if ($verbose);
     return 1;
@@ -143,13 +146,13 @@ if ($ref_name  =~ "^refs/heads/") {
   	if (allow_create_branch($short_name)) {
 	  	grant("Permission granted!");  
 	  } else {
-		  deny("Cannot create branch");
+		  deny($message);
 	  }
   } elsif ( $new_ref eq $zero ) {
   	if (allow_delete_branch($short_name)) {
   		grant("Permission granted!");  
   	} else {
-	    deny("Cannot delete branch");
+	    deny($message);
     }
   } else {
     #updating an existing branch
@@ -158,7 +161,7 @@ if ($ref_name  =~ "^refs/heads/") {
     if ( allow_update_branch($short_name, $merge_base ne $old_ref)) {
       grant("Permission granted");
     } else {
-      deny("Cannot update branch.");
+      deny($message);
     }
   }
 
@@ -170,18 +173,18 @@ if ($ref_name  =~ "^refs/heads/") {
   	if ( allow_delete_tag($short_name) ) {
 	    grant("Permission granted");
 	  } else {
-	  	deny("Cannot delete tags");
+	  	deny($message);
 	 	}
   } elsif ( $old_ref ne $zero ) {
   	if ( allow_update_tag($short_name, $commit_type eq "tag") ) {
   		grant("Permission granted");  	
     } else {
-	    deny("Cannot move tags");
+	    deny($message);
     }
   } elsif ( allow_create_tag($short_name, $commit_type eq "tag") ) {
   	grant("Permission granted");
   } else {
-    deny("Cannot create tag");
+    deny($message);
   } 
 } else {
   deny ("$ref_name is not a branch or tag.");
