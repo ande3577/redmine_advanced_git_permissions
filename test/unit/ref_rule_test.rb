@@ -11,7 +11,7 @@ class RefRuleTest < ActiveSupport::TestCase
 
   # Replace this with your real tests.
   def test_create
-    ref_rule = RefRule.create(:repository => @repository, :rule_type => :public_ref, :expression => '*', :ref_type => :branch)
+    ref_rule = RefRule.create(:repository_id => @repository.id, :rule_type => :public_ref, :expression => '*', :ref_type => :branch)
         
     assert_equal @repository, ref_rule.repository, "repository after create"
     assert_equal :public_ref, ref_rule.rule_type, "rule type after create"

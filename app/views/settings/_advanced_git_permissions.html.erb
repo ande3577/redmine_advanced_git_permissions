@@ -4,3 +4,6 @@
 	<%= check_box_tag "settings[require_annotated_tag]", 1, Setting.plugin_redmine_advanced_git_permissions[:require_annotated_tag] ? true : false %>
 	<%= hidden_field_tag "settings[dummy_setting]" %>
 </p>
+<p>
+  <%= link_to l(:label_manage_ref_rules), { :controller => "ref_rules", :action => "index" } %>
+</p>

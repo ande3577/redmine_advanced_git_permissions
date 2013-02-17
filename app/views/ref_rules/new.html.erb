@@ -1,0 +1,9 @@
+<h2><%= link_to l(:label_ref_rules_plural), {:controller => 'ref_rules', :action => 'index', :repository_id => @repository } %> &#187; <%= l(:label_ref_rule_new) %></h2>
+
+<%= labelled_form_for @ref_rule do |f| %>
+<%= render :partial => 'form', :locals => { :f => f } %>
+<%= f.hidden_field(:repository_id, :value => @repository.id) unless @repository.nil?%>
+<p>
+  <%= f.submit l(:button_create) %>
+</p>
+<% end %>

@@ -27,3 +27,7 @@ echo "  Non-FF Update Branch: Authorized user: should pass"
 perl update refs/heads/master $COMMIT_2 $COMMIT_1 admin test
 echo "  Non-FF Update Branch: Unauthorized user: should fail"
 perl update refs/heads/master $COMMIT_2 $COMMIT_1 developer test
+
+echo "  Update protected branch: unauthorized user: should fail"
+perl update refs/heads/master $COMMIT_1 $COMMIT_2  developer test
+

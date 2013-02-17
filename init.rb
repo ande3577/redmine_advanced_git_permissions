@@ -1,6 +1,7 @@
 require 'redmine'
 
 require_dependency 'git_permissions_repository_patch'
+require_dependency 'git_permissions_repositories_helper_patch'
 
 Redmine::Plugin.register :redmine_advanced_git_permissions do
   project_module :repository do
@@ -12,6 +13,7 @@ Redmine::Plugin.register :redmine_advanced_git_permissions do
     permission :delete_tag, :git_update => :delete_tag
     permission :update_tag, :git_update => :update_tag 
     permission :update_protected_tag, :git_update => :update_tag
+    permission :manage_ref_rules, { :ref_rules => [ :index, :show, :create, :new, :edit, :destroy, :update, :update_inherit_global_rules ] }
   end
   
   # placholder to keep the hash from being removed

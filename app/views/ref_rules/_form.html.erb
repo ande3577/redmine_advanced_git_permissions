@@ -1,0 +1,8 @@
+<div class="box tabular">
+  <h3><%= l(:label_ref_rule_settings) %></h3>
+  <p><%= f.select :ref_type, RefRule.ref_types %></p>
+  <p><%= f.select :rule_type, RefRule.rule_types %></p>
+  <p><%= f.text_field :expression %></p>
+  <p><%= f.check_box :regex %></p>
+  <%= f.hidden_field :global, :value => @repository.nil? %>
+</div>

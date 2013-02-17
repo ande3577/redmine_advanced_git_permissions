@@ -1,0 +1,53 @@
+<%= debug @repository.inspect %>
+<%= debug @ref_rules.inspect %>
+
+<div class="contextual">
+<%= link_to l(:label_ref_rule_new), {:controller => 'ref_rules', :action => 'new', :repository_id => @repository}, :class => 'icon icon-add' %>
+</div>
+
+<% if @repository.nil? %>
+  <h3><%= l :label_git_global_ref_rule %></h3>
+<% else %>
+  <h3><%= l :label_git_global_ref_rule_for, :repository => @repository.identifier %></h3>
+  
+  <%= form_tag({:controller => :ref_rules, :action => :update_inherit_global_rules}, :method => :put) do %>
+    <%= label_tag l(:field_inherit_global_rules) %>
+    <%= check_box_tag :inherit_global_rules, true, @repository.inherit_global_rules  %>
+    <p>
+      <%= submit_tag l :button_submit  %>
+    </p>
+  <% end %>
+  
+<% end %>
+
+<% if @ref_rules.empty? %>
+  <p class="nodata"><%= l(:label_no_data) %></p>
+<% else %>
+  <table class="list">
+    <thead><tr>
+    <th><%=l(:field_ref_type)%></th>
+    <th><%=l(:field_rule_type)%></th>
+    <th><%=l(:field_expression)%></th>
+    <th><%=l(:field_regex)%></th>
+    <th></th>
+    <th></th>
+    </tr></thead>
+    <tbody>
+  <% @ref_rules.each do |rule| %>
+    <tr class="<%= cycle 'odd', 'even' %>">
+      <td align="center"><%= rule.ref_type %></td>
+      <td align="center"><%= rule.rule_type %></td>
+      <td align="center"><%= rule.expression %></td>
+      <td align="center"><%= rule.regex %></td>
+      <% if !@repository.nil? && rule.global %>
+        <td></td>
+        <td></td>
+      <% else %>
+        <td class="buttons"><%= link_to l(:button_edit), { :controller => 'ref_rules', :action => 'edit', :id => rule }, {:class => 'icon icon-edit'} %></td>
+        <td class="buttons"><%= delete_link rule %></td>
+      <% end %>
+    </tr>
+  <% end %>
+  </table>
+<% end %>
+

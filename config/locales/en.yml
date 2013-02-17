@@ -20,6 +20,23 @@ en:
   notice_git_cannot_delete_branch: user not authorized to delete branch
   notice_git_cannot_create_tag: user not authorized to create tag
   notice_git_cannot_delete_tag: user not authorized to delete tag
-  notice_git_cannot_update_tag: user not authorized to update tag 
-  
-  
+  notice_git_cannot_update_tag: user not authorized to update tag
+  notice_git_create_failed: Cannot create rule!
+  notice_git_create_succeeded: Rule created.  
+  notice_git_delete_failed: Cannot delete rule!
+  notice_git_delete_succeeded: Rule deleted.
+  notice_git_update_failed: Cannot update rule!
+  notice_git_update_succeeded: Rule updated.
+  advanced_git_permissions_settings_general_title: Advanced Git Permissions Settings
+  label_require_annotated_tag: Require annotated tag
+  label_git_global_ref_rule: Global Repository Rules
+  label_git_global_ref_rule_for: "Repository Rules for: %{repository}"
+  label_ref_rule_new: "New rule"
+  label_manage_ref_rules: "Manage repository rules"
+  field_expression: "Expression"
+  label_ref_rules_plural: "Repository Rules"
+  field_ref_type: Ref Type
+  field_rule_type: Rule Type
+  field_regex: Regular Expression
+  field_inherit_global_rules: Inherit global rules
+  label_ref_rule_settings: Rule Settings 
