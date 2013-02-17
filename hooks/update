@@ -1,21 +1,31 @@
 #!/usr/bin/perl
 
-my $redmine_url = http://0.0.0.0:3000/sys/git/
+my $redmine_url = "http://0.0.0.0:3000";
+my $ws_key = "my_secret_key";
+my $git_root = "/var/www/git/";
 
 # Set to true to diagnose issues, false to reduce clutter
-my $verbose = 1;
+my $verbose = 0;
+my $test = 0;
+
+my $message = "";
 
 if ($verbose) {
   use warnings;
 }
 
-my $ref_name = $ARGV[0];
-my $old_ref = $ARGV[1];
-my $new_ref = $ARGV[2];
+sub get_repository_name {
+ my $location = $_[0];
+  my ($repository) = $location =~ m{^$git_root/*(.+)};
+  $repository;
+}
 
-my $zero="0000000000000000000000000000000000000000";
-
-my $user = $ENV{'GIT_COMMITTER_NAME'};
+sub get_project_identifier {
+  my $location = $_[0];
+  $location =~ s/\.git$//;
+  my ($identifier) = $location =~ m{^$git_root/*([^/.]+)};
+  $identifier;
+}
 
 sub trim($)
 {
@@ -24,6 +34,18 @@ sub trim($)
 	$string =~ s/\s+$//;
 	return $string;
 }
+
+my $ref_name = $ARGV[0];
+my $old_ref = $ARGV[1];
+my $new_ref = $ARGV[2];
+my $user = $test ? $ARGV[3] : $ENV{'GIT_COMMITTER_NAME'};
+my $work_dir = $test ? "/var/www/git/test.git" : trim(`pwd -D`);
+my $repository = $work_dir;
+my $project = get_project_identifier($work_dir);
+
+
+my $zero="0000000000000000000000000000000000000000";
+
 
 sub grant {
   if($verbose) {
@@ -40,46 +62,63 @@ sub deny {
 }
 
 sub get_project_identifier {
-    my $r = shift;
-
-    my $cfg = Apache2::Module::get_config(__PACKAGE__, $r->server, $r->per_dir_config);
-    my $location = $r->location;
-    $location =~ s/\.git$// if (defined $cfg->{RedmineGitSmartHttp} and $cfg->{RedmineGitSmartHttp});
-    my ($identifier) = $r->uri =~ m{$location/*([^/.]+)};
+    my $location = $_[0];
+    $location =~ s/\.git$//;
+    my ($identifier) = $location =~ m{$git_root/*([^/.]+)};
     $identifier;
 }
 
 sub read_url {
-  $response = $lwp->get($_0);
+	use LWP;
+	my $browser = LWP::UserAgent->new;
+	
+	print "reading @_\n" 	if ($verbose);
+  $response = $browser->get( @_ );
+  print $response->status_line if ($verbose);
+  $message = $response->content;
   if( $response->is_success ) {
+	  print "Success!!!\n" 	if ($verbose);
     return 1;
   } else {
+ 	  print "Failure!!!\n" 	if ($verbose);
     return 0;
   }
 }
 
 sub allow_create_branch {
-  return read_url($redmine_url + '/' + project + '/branch/create?user_name=' + $user + '&branch=' + $short_name);
+	$url = "$redmine_url/sys/git/$project/branch/create?user_name=$user&branch=$_[0]&repository=$repository&key=$ws_key";
+	print "url = $url\n" 	if ($verbose);
+  return read_url($url);
 }
 
 sub allow_delete_branch {
-  return 0;
+	$url = "$redmine_url/sys/git/$project/branch/delete?user_name=$user&branch=$_[0]&repository=$repository&key=$ws_key";
+	print "url = $url\n" 	if ($verbose);
+  return read_url($url);
 }
 
 sub allow_update_branch {
-  return 1;
+	$url = "$redmine_url/sys/git/$project/branch/update?user_name=$user&branch=$_[0]&repository=$repository&ff=$_[1]&key=$ws_key";
+	print "url = $url\n" 	if ($verbose);
+  return read_url($url);
 }
 
 sub allow_create_tag {
-  return 0;
+	$url = "$redmine_url/sys/git/$project/tag/create?user_name=$user&tag=$_[0]&annotated=$_[1]&repository=$repository&key=$ws_key";
+	print "url = $url\n" 	if ($verbose);
+  return read_url($url);
 }
 
 sub allow_delete_tag {
-  return 0;
+	$url = "$redmine_url/sys/git/$project/tag/delete?user_name=$user&tag=$_[0]&repository=$repository&key=$ws_key";
+	print "url = $url\n" 	if ($verbose);
+  return read_url($url);
 }
 
-sub allow_move_tag {
-  return 0;
+sub allow_update_tag {
+	$url = "$redmine_url/sys/git/$project/tag/update?user_name=$user&tag=$_[0]&annotated=$_[1]&repository=$repository&key=$ws_key";
+	print "url = $url\n" 	if ($verbose);
+  return read_url($url);
 }
 
 my $commit_type;
@@ -100,18 +139,29 @@ if ($verbose) {
 if ($ref_name  =~ "^refs/heads/") {
   $short_name = $ref_name;
   $short_name =~ s/refs\/heads\///;
+
   if ( $verbose ) { print("$short_name is a branch\n"); }
 
-  if ( $old_ref eq $zero && !allow_create_branch($short_name)) {
-    deny("Cannot create branch");
-  } elsif ( $new_ref eq $zero && !allow_delete_branch($short_name)) {
-    deny("Cannot delete branch");
+  if ( $old_ref eq $zero ) {
+  	if (allow_create_branch($short_name)) {
+	  	grant("Permission granted!");  
+	  } else {
+		  deny($message);
+	  }
+  } elsif ( $new_ref eq $zero ) {
+  	if (allow_delete_branch($short_name)) {
+  		grant("Permission granted!");  
+  	} else {
+	    deny($message);
+    }
   } else {
     #updating an existing branch
     $merge_base = trim(`git merge-base $old_ref $new_ref`);
     if ( $verbose ) { print("merge-base = $merge_base\n") };
-    if ( !allow_update_branch($short_name, $merge_base ne $old_ref)) {
-      deny("Cannot update branch.");
+    if ( allow_update_branch($short_name, $merge_base ne $old_ref)) {
+      grant("Permission granted");
+    } else {
+      deny($message);
     }
   }
 
@@ -119,18 +169,30 @@ if ($ref_name  =~ "^refs/heads/") {
   $short_name = $ref_name;
   $short_name =~ s/refs\/tags\///;
   if ( $verbose ) { print("$short_name is a tag\n"); }
-  if ( $new_ref eq $zero && !allow_delete_tag($short_name) ) {
-    deny("Cannot delete tags");
-  } elsif ( $old_ref ne $zero && !allow_update_tag($short_name) ) {
-    deny("Cannot move tags");
-  } elsif ( !allow_create_tag($short_name, $commit_type ne "tag") ) {
-    deny("Cannot create unannotated tag");
-  }
+  if ( $new_ref eq $zero ) {
+  	if ( allow_delete_tag($short_name) ) {
+	    grant("Permission granted");
+	  } else {
+	  	deny($message);
+	 	}
+  } elsif ( $old_ref ne $zero ) {
+  	if ( allow_update_tag($short_name, $commit_type eq "tag") ) {
+  		grant("Permission granted");  	
+    } else {
+	    deny($message);
+    }
+  } elsif ( allow_create_tag($short_name, $commit_type eq "tag") ) {
+  	grant("Permission granted");
+  } else {
+    deny($message);
+  } 
 } else {
   deny ("$ref_name is not a branch or tag.");
 }
 
-grant("Permission granted");
+deny("Unknown error");
+
+
 
 
 
