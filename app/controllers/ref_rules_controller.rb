@@ -77,7 +77,6 @@ class RefRulesController < ApplicationController
   def update
     @ref_rule.safe_attributes = params[:ref_rule]
     symbolize(@ref_rule)
-    logger.debug "updated rule = #{@ref_rule.inspect}"
     if !@ref_rule.repository_id_changed? and !@ref_rule.global_changed? and @ref_rule.save
       flash[:notice] = l(:notice_git_update_succeeded)
     else
@@ -179,11 +178,6 @@ class RefRulesController < ApplicationController
   end
   
   def authorize
-    logger.debug "params = #{params.inspect}"
-    logger.debug "user = #{User.current.login}"
-    logger.debug "@ref_rule = #{@ref_rule.inspect}"
-    logger.debug "repository = #{@repository.inspect}"
-    logger.debug "project = #{@project.inspect}"
     if @repository.nil?
       if !User.current().admin?
         deny_access

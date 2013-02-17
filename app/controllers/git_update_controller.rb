@@ -70,8 +70,6 @@ private
       return false
     end
     
-    logger.debug "project = #{@project.inspect}"
-    logger.debug "repositories = #{@project.repositories.inspect}"
     @repository = @project.repositories.where(:url => params[:repository]).first
     
     if @repository.nil?
@@ -124,8 +122,6 @@ private
   
   def require_annotated
     required = Setting.plugin_redmine_advanced_git_permissions[:require_annotated_tag] ? true : false
-    logger.debug "setting = #{Setting.plugin_redmine_advanced_git_permissions[:require_annotated_tag]}"
-    logger.debug "required = #{required.inspect}"
     
     if params[:annotated].nil?
       render_404 :message => :notice_git_annotated_not_specified
@@ -138,7 +134,6 @@ private
   end
 
   def deny_access
-    logger.debug "deny access: #{params.inspect}"
     
     message = "hello world" # :notice_not_authorized
     case params[:action]
