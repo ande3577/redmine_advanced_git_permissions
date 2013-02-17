@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-my $redmine_url = http://0.0.0.0:3000
+my $redmine_url = http://0.0.0.0:3000/sys/git/
 
 # Set to true to diagnose issues, false to reduce clutter
 my $verbose = 1;
@@ -59,7 +59,7 @@ sub read_url {
 }
 
 sub allow_create_branch {
-  return read_url($redmine_url + '/' + project + '/git/branch/create?user_name=' + $user + '&branch=' + $short_name);
+  return read_url($redmine_url + '/' + project + '/branch/create?user_name=' + $user + '&branch=' + $short_name);
 }
 
 sub allow_delete_branch {

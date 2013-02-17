@@ -2,7 +2,7 @@ class GitUpdateController < ApplicationController
   unloadable
 
   skip_before_filter :check_if_login_required
-  before_filter :find_project, :find_repository, :find_user, :require_commit_access 
+  before_filter :check_enabled, :find_project, :find_repository, :find_user, :require_commit_access 
   
   append_before_filter :authorize, :except => :update_branch
   append_before_filter :validate_branch, :only => [ :create_branch, :delete_branch, :update_branch ]
@@ -157,10 +157,30 @@ private
     render_403 :message => message
   end
   
+  def render_403(params)
+    render_error :message => params[:message], :status => 403
+  end
+  
+  def render_404(params)
+      render_error :message => params[:message], :status => 404
+  end
+  
+  def render_api_ok
+    render :text => '', :status => :ok, :layout => nil
+  end
+  
   def render_error(params)
     @message = params[:message]
     @message = l(@message) if @message.is_a?(Symbol)
-    render :text => @message, :status => params[:status]
+    render :text => @message, :status => params[:status], :layout => nil
+  end
+  
+  def check_enabled
+    User.current = nil
+    unless Setting.sys_api_enabled? && params[:key].to_s == Setting.sys_api_key
+      render :text => 'Access denied. Repository management WS is disabled or key is invalid.', :status => 403
+      return false
+    end
   end
   
 end
