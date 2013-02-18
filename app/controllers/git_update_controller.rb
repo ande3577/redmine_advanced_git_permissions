@@ -22,7 +22,7 @@ class GitUpdateController < ApplicationController
     if fast_forward.nil?
       render_404 :message => :notice_git_fastforward_not_specified
     elsif (fast_forward.empty? or fast_forward == "0") and !User.current.allowed_to?(:non_ff_update, @project)
-      render_403 :message => :notice_git_fastforward_not_authorized
+      render_403 :message => l(:notice_git_fastforward_not_authorized, :ref_name => params[:branch])
     else
       render_api_ok
     end
@@ -49,7 +49,7 @@ private
         
     @project = Project.where(:name => params[:proj_name]).first
     if @project.nil?
-      render_404  :message => :notice_git_project_not_found
+      render_404  :message => l(:notice_git_project_not_found, :project_id => params[:proj_name])
       return false
     end
     true
@@ -88,16 +88,16 @@ private
   
   def validate_branch
     if params[:branch].nil?
-       render_404 :message => :notice_git_user_not_specified
+       render_404 :message => :notice_git_branch_not_specified
        return false
     end
 
     branch_type = @repository.evaluate_ref :branch, params[:branch]
     if branch_type == :illegal_ref
-      render_403 :message => :notice_git_illegal_branch
+      render_403 :message => l( :notice_git_illegal_branch, :ref_name => params[:branch] )
       return false    
     elsif branch_type == :protected_ref and !User.current().allowed_to?(:update_protected_branch, @project)
-      render_403 :message => :notice_git_user_not_authorized_protected_branch
+      render_403 :message => l( :notice_git_user_not_authorized_protected_branch, :ref_name => params[:branch] )
       return false
     end
     true
@@ -111,10 +111,10 @@ private
        
     tag_type = @repository.evaluate_ref :tag, params[:tag]
     if tag_type == :illegal_ref
-       render_403 :message => :notice_git_illegal_tag
+       render_403 :message => l( :notice_git_illegal_tag, :ref_name => params[:tag] )
        return false
     elsif tag_type == :protected_ref and !User.current().allowed_to?(:update_protected_tag, @project)
-      render_403 :message => :notice_git_user_not_authorized_protected_tag
+      render_403 :message => l( :notice_git_user_not_authorized_protected_tag, :ref_name => params[:tag] )
       return false
     end
     true
@@ -127,26 +127,24 @@ private
       render_404 :message => :notice_git_annotated_not_specified
       return false
     elsif (params[:annotated].empty? or params[:annotated] == "0") and required 
-      render_403 :message => :notice_git_unannotated_tag_not_allowed
+      render_403 :message => l( :notice_git_unannotated_tag_not_allowed, :ref_name => params[:tag] )
       return false
     end
     true
   end
 
   def deny_access
-    
-    message = "hello world" # :notice_not_authorized
     case params[:action]
     when "create_branch"
-      message = :notice_git_cannot_create_branch
+      message = l( :notice_git_cannot_create_branch, :ref_name => params[:branch] )
     when "delete_branch"
-      message = :notice_git_cannot_delete_branch
+      message = l( :notice_git_cannot_delete_branch, :ref_name => params[:branch] )
     when "create_tag"
-      message = :notice_git_cannot_create_tag
+      message = l( :notice_git_cannot_create_tag, :ref_name => params[:tag] )
     when "delete_tag"
-      message = :notice_git_cannot_delete_tag
+      message = l( :notice_git_cannot_delete_tag, :ref_name => params[:tag] )
     when "update_tag"
-      message = :notice_git_cannot_update_tag
+      message = l( :notice_git_cannot_update_tag, :ref_name => params[:tag] )
     end
     
     render_403 :message => message

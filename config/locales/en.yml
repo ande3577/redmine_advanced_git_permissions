@@ -1,26 +1,27 @@
 # English strings go here for Rails i18n
 en:
   notice_git_fastforward_not_specified: fast-forward not specified
-  notice_git_fastforward_not_authorized: user is not authorized to perform a non fast-forward update
+  notice_git_fastforward_not_authorized: "user is not authorized to perform a non fast-forward update on %{ref_name}" 
   notice_git_project_not_specified: project not specified
-  notice_git_project_not_found: project not found
+  notice_git_project_not_found: "project %{project_id} not found"
   notice_git_user_not_specified: user not specified
   notice_git_repository_not_specified: repository not specified
-  notice_git_repository_not_found: repository not found
-  notice_git_user_not_authorized_to_commit: user not authorized to update repository
+  notice_git_repository_not_found: "repository not found"
+  notice_git_user_not_authorized_to_commit: "user not authorized to update repository"
   notice_git_user_not_specified: user not specified
-  notice_git_illegal_branch: illegal branch name
-  notice_git_user_not_authorized_protected_branch: user is not authorized to update protected branch
+  notice_git_branch_not_specified: branch not specified
+  notice_git_illegal_branch: "illegal branch name %{ref_name}"
+  notice_git_user_not_authorized_protected_branch: "user is not authorized to update protected branch %{ref_name}" 
   notice_git_tag_not_specified: tag not specified
-  notice_git_illegal_tag: illegal tag
-  notice_git_user_not_authorized_protected_tag: user is not authorized to update protected tag
+  notice_git_illegal_tag: "illegal tag %{ref_name}"
+  notice_git_user_not_authorized_protected_tag: "user is not authorized to update protected tag %{ref_name}"
   notice_git_annotated_not_specified: tag annotation not specified
-  notice_git_unannotated_tag_not_allowed: unannotated tags are not allowed
-  notice_git_cannot_create_branch: user not authorized to create branch
-  notice_git_cannot_delete_branch: user not authorized to delete branch
-  notice_git_cannot_create_tag: user not authorized to create tag
-  notice_git_cannot_delete_tag: user not authorized to delete tag
-  notice_git_cannot_update_tag: user not authorized to update tag
+  notice_git_unannotated_tag_not_allowed: "unannotated tag %{ref_name} not allowed"
+  notice_git_cannot_create_branch: "user not authorized to create branch %{ref_name}"
+  notice_git_cannot_delete_branch: "user not authorized to delete branch %{ref_name}"
+  notice_git_cannot_create_tag: "user not authorized to create tag %{ref_name}"
+  notice_git_cannot_delete_tag: "user not authorized to delete tag %{ref_name}"
+  notice_git_cannot_update_tag: "user not authorized to update tag %{ref_name}"
   notice_git_create_failed: Cannot create rule!
   notice_git_create_succeeded: Rule created.  
   notice_git_delete_failed: Cannot delete rule!

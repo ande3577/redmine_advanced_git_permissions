@@ -31,3 +31,12 @@ OLD_TAG_SHA=`git rev-parse unannotated_tag~`
 echo "  update unannotated tag"
 perl update refs/tags/unannotated_tag $OLD_TAG_SHA $UNANNOTATED_TAG_SHA admin test
 
+# example illegal tag
+echo "  create illegal tag should fail"
+perl update refs/tags/illegal_tag $ZER0 $ANNOTATED_TAG_SHA admin test
+
+echo "  create protected tag"
+perl update refs/tags/protected_tag $ZER0 $ANNOTATED_TAG_SHA admin test
+
+echo "  create protected tag w/o permission (should fail)"
+perl update refs/tags/protected_tag $ZER0 $ANNOTATED_TAG_SHA manager test
