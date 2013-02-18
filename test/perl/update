@@ -39,7 +39,7 @@ my $ref_name = $ARGV[0];
 my $old_ref = $ARGV[1];
 my $new_ref = $ARGV[2];
 my $user = $test ? $ARGV[3] : $ENV{'GIT_COMMITTER_NAME'};
-my $work_dir = $test ? "/var/www/git/test.git" : trim(`pwd -D`);
+my $work_dir = $test ? "/var/www/git/test.git" : trim(`pwd -P`);
 my $repository = $work_dir;
 my $project = get_project_identifier($work_dir);
 
@@ -58,7 +58,7 @@ sub grant {
 sub deny {
   ($reason) = @_;
   print("Access Denied: $reason\n");
-  exit(0);
+  exit(1);
 }
 
 sub get_project_identifier {
@@ -158,7 +158,7 @@ if ($ref_name  =~ "^refs/heads/") {
     #updating an existing branch
     $merge_base = trim(`git merge-base $old_ref $new_ref`);
     if ( $verbose ) { print("merge-base = $merge_base\n") };
-    if ( allow_update_branch($short_name, $merge_base ne $old_ref)) {
+    if ( allow_update_branch($short_name, $merge_base eq $old_ref ? 1 : 0)) {
       grant("Permission granted");
     } else {
       deny($message);
