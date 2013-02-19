@@ -18,7 +18,7 @@ module GitPermissionsRepositoriesHelperPatch
     def git_field_tags_with_manage_rules(form, repository)
       gittags = git_field_tags_without_manage_rules(form, repository)
       
-      unless repository.new_record?
+      if !repository.new_record? and User.current.allowed_to? :manage_ref_rules, @repository.project
       gittags << link_to(l(:label_manage_ref_rules), { :controller => "ref_rules", :action => "index", :repository_id => @repository })  
       end
       return gittags
