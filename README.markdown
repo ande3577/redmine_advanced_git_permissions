@@ -20,12 +20,18 @@ Works on redmine 2.2.x
 
 ## Installation
 
-# Setup a smart http server following the instructions provided on the 
-redmine website
-# Clone the plugin to: plugins/redmine_advanced_git_permissions
-# Migrate the database
+1. Clone the plugin to: plugins/redmine_advanced_git_permissions
+1. Migrate the database
 > rake redmine:plugins:migrate RAILS_ENV=production
-# Restart the server
+1. Restart the server
+
+## Git Setup
+
+1. Enable WS and generate a secret key
+1. Setup a smart http server following the instructions provided on the 
+redmine website
+1. Copy hooks/update and correct the host address and secret key
+1. Include a copy of the update hook in all git repositories (or set it up as a template)
 
 ## Usage
 
