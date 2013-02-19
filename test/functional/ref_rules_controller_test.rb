@@ -58,33 +58,33 @@ class RefRulesControllerTest < ActionController::TestCase
     assert_equal @protected_rule, ref_rules.first
   end
   
-  def test_show
-    get :show, :id => @global_rule.id
-    assert_response 302, "get a global ref_rule with no id"
-      
-    get :show, :id => @protected_rule.id
-    assert_response 302, "get a non-global ref_rule with no id"
-      
-    @request.session[:user_id] = @admin.id
-    get :show, :id => @global_rule.id
-    assert_response 200, "get a global ref_rule with no repository"
-    assert_equal @global_rule, assigns(:ref_rule)
-    
-    get :show, :id => @protected_rule.id, :repository_id => @repository.id
-    assert_response 404, "get a rule with a repository id"
-      
-    get :show, :id => @protected_rule.id
-    assert_response 200
-    assert_equal @protected_rule, assigns(:ref_rule)
-    
-    @request.session[:user_id] = @user.id
-    get :show, :id => @global_rule.id
-    assert_response 403, "get a global ref_rule with no id"  
-      
-    get :show, :id => @protected_rule.id
-    assert_response 200
-    assert_equal @protected_rule, assigns(:ref_rule)
-  end
+#  def test_show
+#    get :show, :id => @global_rule.id
+#    assert_response 302, "get a global ref_rule with no id"
+#      
+#    get :show, :id => @protected_rule.id
+#    assert_response 302, "get a non-global ref_rule with no id"
+#      
+#    @request.session[:user_id] = @admin.id
+#    get :show, :id => @global_rule.id
+#    assert_response 200, "get a global ref_rule with no repository"
+#    assert_equal @global_rule, assigns(:ref_rule)
+#    
+#    get :show, :id => @protected_rule.id, :repository_id => @repository.id
+#    assert_response 404, "get a rule with a repository id"
+#      
+#    get :show, :id => @protected_rule.id
+#    assert_response 200
+#    assert_equal @protected_rule, assigns(:ref_rule)
+#    
+#    @request.session[:user_id] = @user.id
+#    get :show, :id => @global_rule.id
+#    assert_response 403, "get a global ref_rule with no id"  
+#      
+#    get :show, :id => @protected_rule.id
+#    assert_response 200
+#    assert_equal @protected_rule, assigns(:ref_rule)
+#  end
   
   def test_new
     get :new
@@ -291,22 +291,28 @@ class RefRulesControllerTest < ActionController::TestCase
   
   def test_evaluate
     @request.session[:user_id] = @admin.id
-    put :evaluate, :id => @global_rule.id, :format => 'js', :ref_rule => { :value => 'illegalglobal' }
-    assert_response 404, "no expression"
       
-    put :evaluate, :id => @global_rule.id, :format => 'js', :ref_rule => { :expression => "illegalglobal" }
+    put :evaluate, :id => @global_rule.id, :value => 'illegalglobal'
+    assert_response 200, "no expression"
+    assert_equal false, assigns(:matches), "no expression"
+      
+    put :evaluate, :id => @global_rule.id, :expression => "illegalglobal"
     assert_response 200, "evaluate a global ref_rule with no value"
     assert_equal false, assigns(:matches), "no value"
-      
-    put :evaluate, :id => @global_rule.id, :format => 'js', :ref_rule => { :expression => "illegalglobal", :value => "illegalglobal" }
+    
+    put :evaluate, :id => @global_rule.id, :expression => "illegalglobal", :value => "illegalglobal"
     assert_response 200, "evaluate a global ref_rule"
     assert_equal true, assigns(:matches)
     
-    put :evaluate, :id => @global_rule.id, :format => 'js', :ref_rule => { :expression => "[a-z]+", :value => "9999", :regex => true }
+    put :evaluate, :id => @global_rule.id, :expression => "[a-z]+", :value => "9999", :regex => true
     assert_equal false, assigns(:matches)
     
-    put :evaluate, :id => @global_rule.id, :format => 'js', :ref_rule => { :expression => "[a-z]+", :value => "illegalglobal", :regex => true }
+    put :evaluate, :id => @global_rule.id, :expression => "[a-z]+", :value => "illegalglobal", :regex => true
     assert_equal true, assigns(:matches)
+    
+    put :evaluate, :id => @global_rule.id
+    assert_response 200, "evaluate a global ref_rule with no value or expression"
+    assert_equal false, assigns(:matches), "no match"
     
   end
   

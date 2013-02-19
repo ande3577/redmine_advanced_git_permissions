@@ -41,3 +41,6 @@ en:
   field_regex: Regular Expression
   field_inherit_global_rules: Inherit global rules
   label_ref_rule_settings: Rule Settings 
+  field_test_expression: Test Expression
+  label_expression_matches: Matches
+  label_expression_does_not_match: Does not match

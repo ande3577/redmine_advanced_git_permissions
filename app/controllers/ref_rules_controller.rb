@@ -2,7 +2,8 @@ class RefRulesController < ApplicationController
   unloadable
 
   append_before_filter :clear_globals
-  append_before_filter :find_ref_rule, :only => [:show, :edit, :update, :destroy]  
+  append_before_filter :find_optional_ref_rule
+  append_before_filter :require_ref_rule, :only => [:show, :edit, :update, :destroy]  
   append_before_filter :find_repository, :authorize
   append_before_filter :find_ref_rules, :only => [:index]
   
@@ -94,18 +95,15 @@ class RefRulesController < ApplicationController
   end
   
   def evaluate
-    if params[:ref_rule].nil? or params[:ref_rule][:expression].nil?
-      render_404
-      return
+    if params[:value].nil? or params[:value].empty? or params[:expression].nil? or params[:expression].empty?
+      @matches = false
+    else
+      @matches = RefRule.evaluate(params[:value],params[:expression], !params[:regex].nil? && params[:regex] != 'false')      
     end
     
-    @matches = RefRule.evaluate(params[:ref_rule][:value],params[:ref_rule][:expression],params[:ref_rule][:regex])
-    
     respond_to do |format|
-        format.js do
-          render(:update) do |page|
-          end
-        end
+        format.js { render :partial => 'evaluate', :locals => { :matches => @matches } }
+        format.html { render :partial => 'evaluate', :locals => { :matches => @matches } }
     end
   end
   
@@ -138,19 +136,18 @@ class RefRulesController < ApplicationController
     @ref_rule = nil
   end
   
-  def find_ref_rule
-      if params[:id].nil?
-        render_404
-        return false
-      end
-      
+  def find_optional_ref_rule
+    unless params[:id].nil?
       @ref_rule = RefRule.where(:id => params[:id]).first
-      
-      if @ref_rule.nil?
-        render_404
-        return false
-      end
     end
+  end
+  
+  def require_ref_rule
+    if @ref_rule.nil?
+      render_404
+      return false
+    end
+  end
   
   def find_repository
     repository_id = params[:repository_id]
@@ -173,6 +170,9 @@ class RefRulesController < ApplicationController
     end
     
     @project = @repository.project unless @repository.nil?
+    
+    logger.debug "@repository = #{@repository.inspect}"
+    logger.debug "@project = #{@project.inspect}"  
     
     true
   end

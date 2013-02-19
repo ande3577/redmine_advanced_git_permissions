@@ -1,0 +1,9 @@
+<div id="matches">
+<% if matches %>
+  <%= image_tag 'true.png' %>
+  <strong><%= l :label_expression_matches %></strong>
+<% else %>
+  <%= image_tag 'false.png' %>
+  <strong><%= l :label_expression_does_not_match %></strong>
+<% end %>
+</div>

@@ -1,0 +1,18 @@
+<script type="text/javascript">
+
+jQuery(function($) {
+  $("#test_expression").change(function() {
+    new jQuery.ajax('evaluate.html', {
+      data: {
+        regex: $("#ref_rule_regex").is(':checked'),
+        expression: $("#ref_rule_expression").val(),
+        value: $("#test_expression").val()
+      },
+      success: function(data, textStatus, jqXHR) {
+          $("#test_expression_matches").html(data);
+        }
+    });
+  })
+})
+
+</script>

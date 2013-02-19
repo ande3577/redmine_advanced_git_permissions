@@ -10,7 +10,11 @@ get 'repositories/:repository_id/ref_rules', :to => "ref_rules#index"
 put 'repositories/:repository_id/ref_rules/update_inherit_global_rules', :to => "ref_rules#update_inherit_global_rules"
 get 'repositories/:repository_id/ref_rules/new', :to => "ref_rules#new"
 post 'repositories/:repository_id/ref_rules/create', :to => "ref_rules#create"
+get 'ref_rules/evaluate', :to => "ref_rules#evaluate"
+get 'ref_rules/:id/evaluate', :to => "ref_rules#evaluate"
+get 'repositories/:repository_id/ref_rules/evaluate', :to => "ref_rules#evaluate"
 resources :ref_rules
-put 'ref_rules/evaluate', :to => "ref_rules#evaluate"
+
+
 
 

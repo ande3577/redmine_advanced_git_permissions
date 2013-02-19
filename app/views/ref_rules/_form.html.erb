@@ -5,4 +5,9 @@
   <p><%= f.text_field :expression %></p>
   <p><%= f.check_box :regex %></p>
   <%= f.hidden_field :global, :value => @repository.nil? %>
+  <h3><%= l(:field_test_expression) %></h3>
+  <%= text_field_tag :test_expression %>
+  <div id="test_expression_matches"></div> 
 </div>
+
+<%= render :partial => 'test_expression' %>
