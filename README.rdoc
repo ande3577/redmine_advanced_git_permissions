@@ -1,3 +1,0 @@
-= redmine_advanced_git_permissions
-
-Description goes here

@@ -20,9 +20,9 @@ Redmine::Plugin.register :redmine_advanced_git_permissions do
   settings :default => {:require_annotated_tag => 0, :dummy_setting => ""}, :partial => 'settings/advanced_git_permissions'
   
   name 'Redmine Advanced Git Permissions plugin'
-  author 'Author name'
-  description 'This is a plugin for Redmine'
+  author 'David Anderson'
+  description 'Allow for advanced git repository permissions management'
   version '0.0.1'
-  url 'http://example.com/path/to/plugin'
-  author_url 'http://example.com/about'
+  url 'https://github.com/ande3577/redmine_advanced_git_permissions'
+  author_url 'https://github.com/ande3577'
 end
