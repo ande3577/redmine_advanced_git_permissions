@@ -8,6 +8,8 @@ module RepositoryPatch
     base.send(:include, InstanceMethods)
     base.class_eval do
       has_many :ref_rules
+      validates :default_branch_rule, :inclusion => { :in => [nil, :public_ref, :protected_ref, :illegal_ref] }
+      validates :default_tag_rule, :inclusion => { :in => [nil, :public_ref, :protected_ref, :illegal_ref] }
     end
   end
   
@@ -24,10 +26,16 @@ module RepositoryPatch
     end
     
     def evaluate_ref(ref_type, ref_name)
-      return :public_ref if ref_rules.where("ref_type = ?", ref_type).empty?
       return :illegal_ref if matches?(ref_type, :illegal_ref, ref_name)
       return :protected_ref if matches?(ref_type, :protected_ref, ref_name)
       return :public_ref if matches?(ref_type, :public_ref, ref_name)
+      if ref_type == :branch
+        return default_branch_rule unless default_branch_rule.nil?
+        return Setting.plugin_redmine_advanced_git_permissions[:default_branch_rule].to_sym
+      elsif ref_type == :tag
+        return default_tag_rule unless default_tag_rule.nil?
+        return Setting.plugin_redmine_advanced_git_permissions[:default_tag_rule].to_sym
+      end
       :illegal_ref
     end
     

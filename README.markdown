@@ -2,9 +2,9 @@
 
 ## Introduction
 
-Works in concert with a git smart http server and git update hook 
-to limit access to a git repository to select users.  It provides 
-the following permissions:
+Works in concert with a git smart http server and git update hook to limit 
+access to a git repository to select users.  It provides the following 
+permissions:
 
 * Create branch
 * Delete branch
@@ -28,16 +28,17 @@ Works on redmine 2.2.x
 ## Git Setup
 
 1. Enable WS and generate a secret key
-1. Setup a smart http server following the instructions provided on the 
-redmine website
+1. Setup a smart http server following the instructions provided on the redmine 
+website
 1. Copy hooks/update and correct the host address and secret key
-1. Include a copy of the update hook in all git repositories (or set it up as a template)
+1. Include a copy of the update hook in all git repositories (or set it up as a 
+template)
 
 ## Usage
 
 Set the appropriate permission based on project roles.
 
-In the repository settings, select "Manage Ref Rules" to define rules for
+In the repository settings, select "Manage Ref Rules" to define rules for 
 allowed or protected branches or tags.
 
 Rules obey the following precedence:
@@ -46,16 +47,16 @@ Rules obey the following precedence:
 2. Protected refs
 3. Public refs
 
-If no rules are present, all references are considered public, otherwise,
-a branch that does not match any rule is treated as illegal.  Rules can
-be defined either to be an exact match or a regular expression.
+A default rule can be used to set the permissions on a ref that does not match 
+any rule. Rules can be defined either to be an exact match or a regular 
+expression.
 
-An administrator can also declare global rules that can optionally be
-inherited by a repository.
+An administrator can also declare global rules that can optionally be inherited 
+by a repository.
 
 ## License
 
-This program is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify 
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.

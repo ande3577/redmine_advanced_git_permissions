@@ -30,6 +30,8 @@ en:
   notice_git_update_succeeded: Rule updated.
   advanced_git_permissions_settings_general_title: Advanced Git Permissions Settings
   label_require_annotated_tag: Require annotated tag
+  label_default_branch_rule: Default Branch Rule
+  label_default_tag_rule: Default Tag Rule
   label_git_global_ref_rule: Global Repository Rules
   label_git_global_ref_rule_for: "Repository Rules for: %{repository}"
   label_ref_rule_new: "New rule"
@@ -44,3 +46,7 @@ en:
   field_test_expression: Test Expression
   label_expression_matches: Matches
   label_expression_does_not_match: Does not match
+  label_inherit_global_default: "Use global (%{rule_type})"
+  label_public_ref: "public_ref"
+  label_protected_ref: "protected_ref"
+  label_illegal_ref: "illegal_ref"

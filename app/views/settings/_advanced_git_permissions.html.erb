@@ -1,9 +1,18 @@
 <h3><%= l(:advanced_git_permissions_settings_general_title) %></h3>
+
 <p>
 	<%= content_tag(:label, l(:label_require_annotated_tag)) %>
-	<%= check_box_tag "settings[require_annotated_tag]", 1, Setting.plugin_redmine_advanced_git_permissions[:require_annotated_tag] ? true : false %>
-	<%= hidden_field_tag "settings[dummy_setting]" %>
+	<%= check_box_tag "settings[require_annotated_tag]", 1, @settings[:require_annotated_tag] ? true : false %>
 </p>
+<p>
+	<%= content_tag(:label, l(:label_default_branch_rule)) %>
+	<%= select_tag "settings[default_branch_rule]", options_for_select([[l(:label_public_ref),:public_ref],[l(:label_protected_ref), :protected_ref],[l(:label_illegal_ref), :illegal_ref]], @settings['default_branch_rule'] ) %>
+</p>
+<p>
+	<%= content_tag(:label, l(:label_default_tag_rule)) %>
+	<%= select_tag "settings[default_tag_rule]", options_for_select([[l(:label_public_ref),:public_ref],[l(:label_protected_ref), :protected_ref],[l(:label_illegal_ref), :illegal_ref]], @settings['default_tag_rule']) %>
+</p>
+	<%= hidden_field_tag "settings[dummy_setting]" %>
 <p>
   <%= link_to l(:label_manage_ref_rules), { :controller => "ref_rules", :action => "index" } %>
 </p>

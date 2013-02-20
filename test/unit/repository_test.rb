@@ -33,18 +33,51 @@ class RepositoryTest < ActiveSupport::TestCase
     assert_equal 5, @repository.ref_rules.count, "number or repositories (includes global)"
   end
   
+  def test_default_ref_rules
+    Setting.plugin_redmine_advanced_git_permissions[:default_branch_rule] = :protected_ref
+    Setting.plugin_redmine_advanced_git_permissions[:default_tag_rule] = :illegal_ref
+    
+    @repository.default_branch_rule = :unsupported_rule
+    @repository.default_tag_rule = :public_ref
+    assert_equal false, @repository.save
+
+    @repository.default_branch_rule = :public_ref    
+    @repository.default_tag_rule = :unsupported_rule
+    assert_equal false, @repository.save
+    
+    @repository.default_branch_rule = nil
+    @repository.default_tag_rule = :public_ref
+    assert_equal true, @repository.save
+    @repository.reload
+    assert_equal nil, @repository.default_branch_rule
+    assert_equal 'public_ref', @repository.default_tag_rule
+    
+    @repository.default_branch_rule = :public_ref
+    @repository.default_tag_rule = nil
+    assert_equal true, @repository.save
+    @repository.reload
+    assert_equal 'public_ref', @repository.default_branch_rule
+    assert_equal nil, @repository.default_tag_rule
+    
+  end
+  
   def test_evaluate
     @repository.inherit_global_rules = true
     assert_equal :illegal_ref, @repository.evaluate_ref(:branch, 'illegal'), "illegal ref"
     assert_equal :illegal_ref, @repository.evaluate_ref(:branch, 'illegalglobal'), "illegal global ref with inherit enabled"
     assert_equal :protected_ref, @repository.evaluate_ref(:branch, 'protected'), "protected ref"
     assert_equal :public_ref, @repository.evaluate_ref(:branch, 'Public'), "public branch"
-    assert_equal :illegal_ref, @repository.evaluate_ref(:branch, 'invalid ref name'), "invalid branch name"
+    Setting.plugin_redmine_advanced_git_permissions[:default_branch_rule] = :illegal_ref
+    assert_equal :illegal_ref, @repository.evaluate_ref(:branch, 'invalid ref name'), "unspecified branch name"  
+    @repository.default_branch_rule = :protected_ref    
+    assert_equal :protected_ref, @repository.evaluate_ref(:branch, 'invalid ref name'), "unspecified branch name"
     
+    Setting.plugin_redmine_advanced_git_permissions[:default_tag_rule] = :illegal_ref
     assert_equal :illegal_ref, @repository.evaluate_ref(:tag, 'Public'), "branch rules don't affect tags"
+    @repository.default_tag_rule = :protected_ref
+    assert_equal :protected_ref, @repository.evaluate_ref(:tag, 'Public'), "branch rules don't affect tags"
+      
     assert_equal :public_ref, @repository.evaluate_ref(:tag, 'tag'), "tag rules can be looked up"
     
-    @repository.ref_rules.each { |r| r.destroy }
-    assert_equal :public_ref, @repository.evaluate_ref(:branch, 'illegal'), 'public if no rules present'
   end
 end

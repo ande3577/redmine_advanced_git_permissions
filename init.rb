@@ -13,11 +13,11 @@ Redmine::Plugin.register :redmine_advanced_git_permissions do
     permission :delete_tag, :git_update => :delete_tag
     permission :update_tag, :git_update => :update_tag 
     permission :update_protected_tag, :git_update => :update_tag
-    permission :manage_ref_rules, { :ref_rules => [ :index, :show, :create, :new, :edit, :destroy, :update, :update_inherit_global_rules, :evaluate ] }
+    permission :manage_ref_rules, { :ref_rules => [ :index, :show, :create, :new, :edit, :destroy, :update, :update_repository_settings, :evaluate ] }
   end
   
   # placholder to keep the hash from being removed
-  settings :default => {:require_annotated_tag => 0, :dummy_setting => ""}, :partial => 'settings/advanced_git_permissions'
+  settings :default => {:require_annotated_tag => 0, :default_branch_rule => :public_ref, :default_tag_rule => :public_ref, :dummy_setting => ""}, :partial => 'settings/advanced_git_permissions'
   
   name 'Redmine Advanced Git Permissions plugin'
   author 'David Anderson'

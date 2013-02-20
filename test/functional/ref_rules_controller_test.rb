@@ -58,34 +58,6 @@ class RefRulesControllerTest < ActionController::TestCase
     assert_equal @protected_rule, ref_rules.first
   end
   
-#  def test_show
-#    get :show, :id => @global_rule.id
-#    assert_response 302, "get a global ref_rule with no id"
-#      
-#    get :show, :id => @protected_rule.id
-#    assert_response 302, "get a non-global ref_rule with no id"
-#      
-#    @request.session[:user_id] = @admin.id
-#    get :show, :id => @global_rule.id
-#    assert_response 200, "get a global ref_rule with no repository"
-#    assert_equal @global_rule, assigns(:ref_rule)
-#    
-#    get :show, :id => @protected_rule.id, :repository_id => @repository.id
-#    assert_response 404, "get a rule with a repository id"
-#      
-#    get :show, :id => @protected_rule.id
-#    assert_response 200
-#    assert_equal @protected_rule, assigns(:ref_rule)
-#    
-#    @request.session[:user_id] = @user.id
-#    get :show, :id => @global_rule.id
-#    assert_response 403, "get a global ref_rule with no id"  
-#      
-#    get :show, :id => @protected_rule.id
-#    assert_response 200
-#    assert_equal @protected_rule, assigns(:ref_rule)
-#  end
-  
   def test_new
     get :new
     assert_response 302, "get new global ref_rule with no id"
@@ -316,19 +288,26 @@ class RefRulesControllerTest < ActionController::TestCase
     
   end
   
-  def test_update_inherit_global_rules
-    put :update_inherit_global_rules, :repository_id => @repository.id
+  def test_update_repository_settings
+    put :update_repository_settings, :repository_id => @repository.id
     assert_response 302, "create rule without permission"
     
-    put :update_inherit_global_rules, :repository_id => @repository.id
+    put :update_repository_settings, :repository_id => @repository.id
     assert_response 302, "create rule with repository without permission"
       
     @request.session[:user_id] = @user.id
       
-    put :update_inherit_global_rules, :repository_id => @repository.id, :inherit_global_rules => true
+    put :update_repository_settings, :repository_id => @repository.id, :inherit_global_rules => true, :default_branch_rule => 'illegal_ref', :default_tag_rule => 'protected_ref'
     assert_redirected_to :controller => :ref_rules, :action => :index, :repository_id => @repository
     assert_equal true, assigns(:repository).inherit_global_rules
+    assert_equal :illegal_ref, assigns(:repository).default_branch_rule
+    assert_equal :protected_ref, assigns(:repository).default_tag_rule
     
+    Setting.plugin_redmine_advanced_git_permissions[:default_branch_rule] = :protected_ref
+    Setting.plugin_redmine_advanced_git_permissions[:default_tag_rule] = :illegal_ref
+    put :update_repository_settings, :repository_id => @repository.id, :inherit_global_rules => true, :default_branch_rule => 'default', :default_tag_rule => 'something_else'
+    assert_equal nil, assigns(:repository).default_branch_rule
+    assert_equal nil, assigns(:repository).default_tag_rule
   end
   
 end

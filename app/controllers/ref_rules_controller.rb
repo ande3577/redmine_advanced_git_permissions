@@ -6,6 +6,7 @@ class RefRulesController < ApplicationController
   append_before_filter :require_ref_rule, :only => [:show, :edit, :update, :destroy]  
   append_before_filter :find_repository, :authorize
   append_before_filter :find_ref_rules, :only => [:index]
+  append_before_filter :symbolize_default_rules, :only => [:update_repository_settings]
   
   def index
     if !@repository.nil?
@@ -107,13 +108,16 @@ class RefRulesController < ApplicationController
     end
   end
   
-  def update_inherit_global_rules
+  def update_repository_settings
     if @repository.nil?
       render_404
       return false
     end
     
     @repository.inherit_global_rules = params[:inherit_global_rules]
+    @repository.default_branch_rule = @default_branch_rule
+    @repository.default_tag_rule = @default_tag_rule
+      
     if !@repository.save
       flash[:error] = l(:notice_git_update_failed)
       begin
@@ -134,6 +138,8 @@ class RefRulesController < ApplicationController
     @project = nil
     @ref_rules = nil
     @ref_rule = nil
+    @default_branch_rule = nil
+    @default_tag_rule = nil
   end
   
   def find_optional_ref_rule
@@ -171,9 +177,6 @@ class RefRulesController < ApplicationController
     
     @project = @repository.project unless @repository.nil?
     
-    logger.debug "@repository = #{@repository.inspect}"
-    logger.debug "@project = #{@project.inspect}"  
-    
     true
   end
   
@@ -198,8 +201,20 @@ class RefRulesController < ApplicationController
     end
   end
   
+  def symbolize_default_rules
+    unless params[:default_branch_rule].nil?
+      @default_branch_rule = params[:default_branch_rule].to_sym unless RefRule.rule_types.index(params[:default_branch_rule].to_sym).nil?
+    end
+    
+    unless params[:default_tag_rule].nil?
+      @default_tag_rule = params[:default_tag_rule].to_sym unless RefRule.rule_types.index(params[:default_tag_rule].to_sym).nil?
+    end
+    
+  end
+  
   def symbolize(ref_rule)
     ref_rule.rule_type = ref_rule.rule_type.to_sym unless ref_rule.rule_type.nil?
     ref_rule.ref_type = ref_rule.ref_type.to_sym unless ref_rule.rule_type.nil?
   end
+  
 end
