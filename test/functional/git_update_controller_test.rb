@@ -166,7 +166,7 @@ class GitUpdateControllerTest < ActionController::TestCase
     get(:delete_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :repository => @repository.url, :key => @api_key } )
     assert_response :success, "delete tag as admin"
       
-    Role.find(1).add_permission! :delete_ref
+    Role.find(1).add_permission! :delete_tag
     get(:delete_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key } )
     assert_response :success, "delete tag with permission"
     
