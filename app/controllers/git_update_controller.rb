@@ -10,22 +10,43 @@ class GitUpdateController < ApplicationController
   append_before_filter :require_annotated, :only => [:create_tag, :update_tag]
     
   def create_branch
+    if @branch_type == :protected_ref and !User.current().allowed_to?(:create_protected_ref, @project)
+      render_403 :message => l( :notice_git_user_not_authorized_create_protected_branch, :ref_name => params[:branch] )
+      return false
+    end    
+
     render_api_ok
   end
   
   def delete_branch
+    if @branch_type == :protected_ref and !User.current().allowed_to?(:delete_protected_ref, @project)
+      render_403 :message => l( :notice_git_user_not_authorized_delete_protected_branch, :ref_name => params[:branch] )
+      return false
+    end    
+    
     render_api_ok
   end
   
   def update_branch
+    if @branch_type == :protected_ref and !User.current().allowed_to?(:update_protected_ref, @project)
+      render_403 :message => l( :notice_git_user_not_authorized_protected_branch, :ref_name => params[:branch] )
+      return false
+    end    
+    
     fast_forward = params[:ff]
     if fast_forward.nil?
       render_404 :message => :notice_git_fastforward_not_specified
-    elsif (fast_forward.empty? or fast_forward == "0") and !User.current.allowed_to?(:non_ff_update, @project)
-      render_403 :message => l(:notice_git_fastforward_not_authorized, :ref_name => params[:branch])
-    else
-      render_api_ok
+      return false
+    elsif (fast_forward.empty? or fast_forward == "0")
+      if !User.current.allowed_to?(:non_ff_update, @project)
+        render_403 :message => l(:notice_git_fastforward_not_authorized, :ref_name => params[:branch])
+        return false
+      elsif @branch_type == :protected_ref and !User.current().allowed_to?(:non_ff_protected_update, @project)
+        render_403 :message => l( :notice_git_user_not_authorized_non_ff_protected_branch, :ref_name => params[:branch] )
+        return false 
+      end
     end
+    render_api_ok
   end
   
   def create_tag
@@ -92,13 +113,10 @@ private
        return false
     end
 
-    branch_type = @repository.evaluate_ref :branch, params[:branch]
-    if branch_type == :illegal_ref
+    @branch_type = @repository.evaluate_ref :branch, params[:branch]
+    if @branch_type == :illegal_ref and (params[:action] != :delete_branch.to_s or !User.current().allowed_to?(:delete_illegal_ref, @project))
       render_403 :message => l( :notice_git_illegal_branch, :ref_name => params[:branch] )
       return false    
-    elsif branch_type == :protected_ref and !User.current().allowed_to?(:update_protected_ref, @project)
-      render_403 :message => l( :notice_git_user_not_authorized_protected_branch, :ref_name => params[:branch] )
-      return false
     end
     true
   end
@@ -108,9 +126,11 @@ private
        render_404 :message => :notice_git_tag_not_specified
        return false
     end
-       
+
+    logger.debug "params = #{params.inspect}"
+           
     tag_type = @repository.evaluate_ref :tag, params[:tag]
-    if tag_type == :illegal_ref
+    if tag_type == :illegal_ref and (params[:action] != :delete_tag.to_s or !User.current().allowed_to?(:delete_illegal_ref, @project))
        render_403 :message => l( :notice_git_illegal_tag, :ref_name => params[:tag] )
        return false
     elsif tag_type == :protected_ref and !User.current().allowed_to?(:update_protected_ref, @project)

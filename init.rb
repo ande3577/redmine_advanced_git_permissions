@@ -7,10 +7,14 @@ Redmine::Plugin.register :redmine_advanced_git_permissions do
   project_module :repository do
     permission :create_ref, :git_update => [:create_branch, :create_tag]
     permission :delete_ref, :git_update => [:delete_branch]
-    permission :update_protected_ref, :git_update => [:update_protected_branch, :update_protected_tag]
     permission :non_ff_update, :git_update => :update_branch
+    permission :update_protected_ref, :git_update => [:update_protected_ref]
+    permission :create_protected_ref, :git_update => [:create_protected_ref]
+    permission :delete_protected_ref, :git_update => [:delete_protected_ref]
+    permission :non_ff_protected_update, :git_update => :update_protected_ref
     permission :delete_tag, :git_update => :delete_tag
     permission :update_tag, :git_update => :update_tag 
+    permission :delete_illegal_ref, :git_update => :delete_illegal_ref
     permission :manage_ref_rules, { :ref_rules => [ :index, :show, :create, :new, :edit, :destroy, :update, :update_repository_settings, :evaluate ] }
   end
   

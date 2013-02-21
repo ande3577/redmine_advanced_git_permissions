@@ -12,6 +12,9 @@ en:
   notice_git_branch_not_specified: branch not specified
   notice_git_illegal_branch: "illegal branch name %{ref_name}"
   notice_git_user_not_authorized_protected_branch: "user is not authorized to update protected branch %{ref_name}" 
+  notice_git_user_not_authorized_create_protected_branch: "user is not authorized to create protected branch %{ref_name}"
+  notice_git_user_not_authorized_delete_protected_branch: "user is not authorized to delete protected branch %{ref_name}"
+  notice_git_user_not_authorized_non_ff_protected_branch: "user is not authorized to perform a non fast-forward update on protected branch %{ref_name}"
   notice_git_tag_not_specified: tag not specified
   notice_git_illegal_tag: "illegal tag %{ref_name}"
   notice_git_user_not_authorized_protected_tag: "user is not authorized to update protected tag %{ref_name}"

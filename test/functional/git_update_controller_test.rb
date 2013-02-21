@@ -205,11 +205,22 @@ class GitUpdateControllerTest < ActionController::TestCase
   end
   
   def test_illegal_branch
+    Role.find(1).add_permission! :commit_access
+    
     illegal_rule = RefRule.create(:repository => @repository, :rule_type => :illegal_ref, :expression => '[a-z]+', :ref_type => :branch, :regex => true)
     illegal_rule.save
     
     get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :ff => "1", :repository => @repository.url, :key => @api_key })
     assert_response 403, "update illegal branch as admin"
+      
+    Role.find(1).add_permission! :delete_ref
+    get(:delete_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key})
+    assert_response 403, "delete illegal branch"
+      
+    Role.find(1).add_permission! :delete_illegal_ref
+    get(:delete_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key})
+    assert_response 200, "delete illegal branch with permission"
+    
   end
   
   def test_protected_branch
@@ -232,15 +243,49 @@ class GitUpdateControllerTest < ActionController::TestCase
     
     get(:update_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => "1", :repository => @repository.url, :key => @api_key } )
     assert_response 403, "update tag without permission"
+    
+    Role.find(1).add_permission! :delete_ref
+    get(:delete_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key})
+    assert_response 403, "delete branch without permission"
       
+    Role.find(1).add_permission! :delete_protected_ref
+    get(:delete_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key})
+    assert_response 200, "delete ref with permission"
+        
+    Role.find(1).add_permission! :create_ref
+    get(:create_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key})
+    assert_response 403, "create branch without permission"
+      
+    Role.find(1).add_permission! :create_protected_ref
+    get(:create_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key})
+    assert_response 200, "create branch with permission"
+      
+    Role.find(1).add_permission! :non_ff_update
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "0", :repository => @repository.url, :key => @api_key })
+    assert_response 403, "non-ff protected branch without permission"
+      
+    Role.find(1).add_permission! :non_ff_protected_update
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "0", :repository => @repository.url, :key => @api_key })
+    assert_response 200, "non-ff protected branch with permission"
   end
   
   def test_illegal_tag
+    Role.find(1).add_permission! :commit_access
+    
     illegal_rule = RefRule.create(:repository => @repository, :rule_type => :illegal_ref, :expression => '[a-z]+', :ref_type => :tag, :regex => true)
     illegal_rule.save
     
     get(:update_tag, {:tag => "illegaltag", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => "1", :repository => @repository.url, :key => @api_key } )
     assert_response 403, "update illegal"
+      
+    Role.find(1).add_permission! :delete_tag
+    get(:delete_tag, {:tag => "illegaltag", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key})
+    assert_response 403, "delete illegal tag"
+      
+    Role.find(1).add_permission! :delete_illegal_ref
+    get(:delete_tag, {:tag => "illegaltag", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key})
+    assert_response 200, "delete illegal tag with permission"
+
   end
   
   def test_protected_tag
