@@ -18,9 +18,9 @@ echo "  Delete Tag: Unauthorized user: should fail"
 perl update refs/tags/annotated_tag $ANNOTATED_TAG_SHA $ZER0 developer test
 
 #example updating tag
-echo "  Create Tag: Authorized user: should pass"
+echo "  Update Tag: Authorized user: should pass"
 perl update refs/tags/annotated_tag $UNANNOTATED_TAG_SHA $ANNOTATED_TAG_SHA admin test
-echo "  Create Tag: Unauthorized user: should fail"
+echo "  Update Tag: Unauthorized user: should fail"
 perl update refs/tags/annotated_tag $UNANNOTATED_TAG_SHA $ANNOTATED_TAG_SHA developer test
 
 #example creating unannotated tag
@@ -38,5 +38,3 @@ perl update refs/tags/illegal_tag $ZER0 $ANNOTATED_TAG_SHA admin test
 echo "  create protected tag"
 perl update refs/tags/protected_tag $ZER0 $ANNOTATED_TAG_SHA admin test
 
-echo "  create protected tag w/o permission (should fail)"
-perl update refs/tags/protected_tag $ZER0 $ANNOTATED_TAG_SHA manager test

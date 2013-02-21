@@ -96,7 +96,7 @@ private
     if branch_type == :illegal_ref
       render_403 :message => l( :notice_git_illegal_branch, :ref_name => params[:branch] )
       return false    
-    elsif branch_type == :protected_ref and !User.current().allowed_to?(:update_protected_branch, @project)
+    elsif branch_type == :protected_ref and !User.current().allowed_to?(:update_protected_ref, @project)
       render_403 :message => l( :notice_git_user_not_authorized_protected_branch, :ref_name => params[:branch] )
       return false
     end
@@ -113,7 +113,7 @@ private
     if tag_type == :illegal_ref
        render_403 :message => l( :notice_git_illegal_tag, :ref_name => params[:tag] )
        return false
-    elsif tag_type == :protected_ref and !User.current().allowed_to?(:update_protected_tag, @project)
+    elsif tag_type == :protected_ref and !User.current().allowed_to?(:update_protected_ref, @project)
       render_403 :message => l( :notice_git_user_not_authorized_protected_tag, :ref_name => params[:tag] )
       return false
     end

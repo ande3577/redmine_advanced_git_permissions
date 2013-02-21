@@ -68,7 +68,7 @@ class GitUpdateControllerTest < ActionController::TestCase
     get(:create_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :repository => @repository.url, :key => @api_key})
     assert_response :success, "create branch as admin"
       
-    Role.find(1).add_permission! :create_branch
+    Role.find(1).add_permission! :create_ref
     get(:create_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key})
     assert_response :success, "create branch with permission"
     
@@ -115,7 +115,7 @@ class GitUpdateControllerTest < ActionController::TestCase
     get(:delete_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :repository => @repository.url, :key => @api_key})
     assert_response :success, "delete branch as admin"
       
-    Role.find(1).add_permission! :delete_branch
+    Role.find(1).add_permission! :delete_ref
     get(:delete_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key})
     assert_response :success, "delete branch with permission"
     
@@ -133,7 +133,7 @@ class GitUpdateControllerTest < ActionController::TestCase
     get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => "1", :repository => @repository.url, :key => @api_key} )
     assert_response :success, "create tag as admin"
    
-    Role.find(1).add_permission! :create_tag
+    Role.find(1).add_permission! :create_ref
     get(:create_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => "1", :repository => @repository.url, :key => @api_key} )
     assert_response :success, "create tag with permission"
     
@@ -166,7 +166,7 @@ class GitUpdateControllerTest < ActionController::TestCase
     get(:delete_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @admin.login, :repository => @repository.url, :key => @api_key } )
     assert_response :success, "delete tag as admin"
       
-    Role.find(1).add_permission! :delete_tag
+    Role.find(1).add_permission! :delete_ref
     get(:delete_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key } )
     assert_response :success, "delete tag with permission"
     
@@ -223,9 +223,16 @@ class GitUpdateControllerTest < ActionController::TestCase
     get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :ff => "1", :repository => @repository.url, :key => @api_key })
     assert_response 200, "update protected branch as admin"
       
-    Role.find(1).add_permission! :update_protected_branch
+    Role.find(1).add_permission! :update_protected_ref
     get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "1", :repository => @repository.url, :key => @api_key })
     assert_response 200, "update protected branch with permission" 
+      
+    get(:create_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :repository => @repository.url, :key => @api_key})
+    assert_response 403, "create branch without permission"
+    
+    get(:update_tag, {:tag => "v0.1", :proj_name => Project.first.name, :user_name => @user.login, :annotated => "1", :repository => @repository.url, :key => @api_key } )
+    assert_response 403, "update tag without permission"
+      
   end
   
   def test_illegal_tag
@@ -249,7 +256,7 @@ class GitUpdateControllerTest < ActionController::TestCase
     get(:update_tag, {:tag => "protectedtag", :proj_name => Project.first.name, :user_name => @admin.login, :annotated => "1", :repository => @repository.url, :key => @api_key } )
     assert_response 200, "update protected tag as admin"
       
-    Role.find(1).add_permission! :update_protected_tag
+    Role.find(1).add_permission! :update_protected_ref
     get(:update_tag, {:tag => "protectedtag", :proj_name => Project.first.name, :user_name => @user.login, :annotated => "1", :repository => @repository.url, :key => @api_key } )
     assert_response 200, "update protected tag with permission"
   end
