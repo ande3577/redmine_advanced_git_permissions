@@ -39,6 +39,7 @@ en:
   label_git_global_ref_rule_for: "Repository Rules for: %{repository}"
   label_ref_rule_new: "New rule"
   label_manage_ref_rules: "Manage repository rules"
+  label_view_ref_rules: "View Repository rules"
   field_expression: "Expression"
   label_ref_rules_plural: "Repository Rules"
   field_ref_type: Ref Type

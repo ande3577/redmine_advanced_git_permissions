@@ -2,6 +2,7 @@ require 'redmine'
 
 require_dependency 'git_permissions_repository_patch'
 require_dependency 'git_permissions_repositories_helper_patch'
+require_dependency 'git_permissions_hook_listener'
 
 Redmine::Plugin.register :redmine_advanced_git_permissions do
   project_module :repository do

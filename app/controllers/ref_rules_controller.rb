@@ -4,15 +4,20 @@ class RefRulesController < ApplicationController
   append_before_filter :clear_globals
   append_before_filter :find_optional_ref_rule
   append_before_filter :require_ref_rule, :only => [:show, :edit, :update, :destroy]  
-  append_before_filter :find_repository, :authorize
+  append_before_filter :find_repository
+  append_before_filter :authorize, :except => [:index]
   append_before_filter :find_ref_rules, :only => [:index]
   append_before_filter :symbolize_default_rules, :only => [:update_repository_settings]
   
   def index
-    if !@repository.nil?
-      @ref_rules = @repository.ref_rules
-    else
-      @ref_rules = RefRule.where(:global => true) 
+    if @project.nil?
+      if !User.current().admin?
+        deny_access
+        return false
+      end
+    elsif !User.current.allowed_to?(:commit_access, @project) and !User.current.allowed_to?(:manage_ref_rules, @project) 
+      deny_access
+      return false
     end
     
     respond_to do |format|

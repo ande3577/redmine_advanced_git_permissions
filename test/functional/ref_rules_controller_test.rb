@@ -56,6 +56,16 @@ class RefRulesControllerTest < ActionController::TestCase
     ref_rules = assigns(:ref_rules)
     assert_equal 1, ref_rules.size
     assert_equal @protected_rule, ref_rules.first
+    
+    Role.find(1).remove_permission! :manage_ref_rules
+    Role.find(1).remove_permission! :commit_access
+    
+    get :index, :repository_id => @repository.id
+    assert_response 403
+    
+    Role.find(1).add_permission! :commit_access
+    get :index, :repository_id => @repository.id
+    assert_response 200
   end
   
   def test_new

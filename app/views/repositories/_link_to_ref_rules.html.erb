@@ -1,0 +1,9 @@
+<% if !@repository.nil? and User.current().allowed_to?(:commit_access,  @repository.project) %>
+  <p>
+  <% if User.current().allowed_to?(:manage_ref_rules, @repository.project) %>
+    <%= link_to l(:label_manage_ref_rules), {:controller => :ref_rules, :action => :index, :repository_id => @repository } %>
+  <% else %>
+    <%= link_to l(:label_view_ref_rules), {:controller => :ref_rules, :action => :index, :repository_id => @repository} %> 
+  <% end %>
+  </p>
+<% end %>
