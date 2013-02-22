@@ -7,6 +7,8 @@ class RepositoryTest < ActiveSupport::TestCase
   
   def setup
     @repository = Repository.first
+    @tag_rule = RefRule.create(:repository => @repository, :rule_type => :public_ref, :expression => 'tag', :ref_type => :tag, :regex => true)
+    @tag_rule.save
     @rule = RefRule.create(:repository => @repository, :rule_type => :public_ref, :expression => '[a-zA-Z]+', :ref_type => :branch, :regex => true)
     @rule.save
     @protected_rule = RefRule.create(:repository => @repository, :rule_type => :protected_ref, :expression => '[a-z]+', :ref_type => :branch, :regex => true)
@@ -15,8 +17,6 @@ class RepositoryTest < ActiveSupport::TestCase
     @illegal_rule.save
     @global_rule = RefRule.create(:rule_type => :illegal_ref, :expression => 'illegalglobal', :ref_type => :branch, :global => true)
     @global_rule.save
-    @tag_rule = RefRule.create(:repository => @repository, :rule_type => :public_ref, :expression => 'tag', :ref_type => :tag, :regex => true)
-    @tag_rule.save
   end
   
   def test_inherit_global_rules
@@ -26,11 +26,24 @@ class RepositoryTest < ActiveSupport::TestCase
   end
   
   def test_ref_rules
-    assert_equal @rule.id, @repository.ref_rules.first.id, "test ref_rules accessor"
     assert_equal 4, @repository.ref_rules.count, "number or repositories (includes global)"
+    
+    #test the order
+    assert_equal @illegal_rule, @repository.ref_rules[0]
+    assert_equal @protected_rule, @repository.ref_rules[1]
+    assert_equal @rule, @repository.ref_rules[2]
+    assert_equal @tag_rule, @repository.ref_rules[3]
     
     @repository.inherit_global_rules = true
     assert_equal 5, @repository.ref_rules.count, "number or repositories (includes global)"
+      
+    #test the order
+    assert_equal @global_rule, @repository.ref_rules[0]
+    assert_equal @illegal_rule, @repository.ref_rules[1]
+    assert_equal @protected_rule, @repository.ref_rules[2]
+    assert_equal @rule, @repository.ref_rules[3]
+    assert_equal @tag_rule, @repository.ref_rules[4]
+      
   end
   
   def test_default_ref_rules

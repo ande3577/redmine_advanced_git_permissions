@@ -18,10 +18,21 @@ module RepositoryPatch
   
   module InstanceMethods
     def ref_rules
+      order_string = "case ref_type
+          when 'branch' then '1'
+          when 'tag' then '2'
+        end, 
+        case rule_type
+          when 'illegal_ref' then '1'
+          when 'protected_ref' then '2'
+          when 'public_ref' then '3'
+        end"
+      
       if inherit_global_rules
-        return RefRule.where("repository_id = ? OR global = ?", id, true)  
+        return RefRule.where("repository_id = ? OR global = ?", id, true).
+          order(order_string + ", global DESC")
       else
-        return RefRule.where("repository_id = ?", id)
+        return RefRule.where("repository_id = ?", id).order(order_string)
       end
     end
     
