@@ -16,6 +16,9 @@ permissions:
 * Update protected tag 
 * Manage ref rules 
 
+It also provides a post-receive hook to update redmine changesets after a new 
+changeset is received.
+
 Works on redmine 2.2.x
 
 ## Installation
@@ -30,7 +33,8 @@ Works on redmine 2.2.x
 1. Enable WS and generate a secret key
 1. Setup a smart http server following the instructions provided on the redmine 
 website
-1. Copy hooks/update and correct the host address and secret key
+1. Copy hooks/update and hooks/post-receive and correct the host address and 
+secret key on both
 1. Include a copy of the update hook in all git repositories (or set it up as a 
 template)
 
