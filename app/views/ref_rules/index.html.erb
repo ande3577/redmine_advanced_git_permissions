@@ -63,7 +63,7 @@
       <td align="center"><%= rule.rule_type %></td>
       <td align="center"><%= rule.expression %></td>
       <td align="center"><%= rule.regex %></td>
-      <% if (!@repository.nil? && rule.global) or !User.current().allowed_to?(:manage_ref_rules, @repository.project) %>
+      <% if !@repository.nil? and (rule.global or !User.current().allowed_to?(:manage_ref_rules, @repository.project)) %>
         <td></td>
         <td></td>
       <% else %>
