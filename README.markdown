@@ -48,8 +48,9 @@ allowed or protected branches or tags.
 Rules obey the following precedence:
 
 1. Illegal refs
-2. Protected refs
-3. Public refs
+2. Private ref
+3. Protected refs
+4. Public refs
 
 A default rule can be used to set the permissions on a ref that does not match 
 any rule. Rules can be defined either to be an exact match or a regular 
@@ -57,6 +58,10 @@ expression.
 
 An administrator can also declare global rules that can optionally be inherited 
 by a repository.
+
+Private rules can be created and specific members specified.  These refs will be
+treated as public refs for their members.  A user with the _Manage Private Refs_
+permission will be able to access a private ref without being a member.
 
 ## License
 

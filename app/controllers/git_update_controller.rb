@@ -113,8 +113,15 @@ private
        return false
     end
 
-    @branch_type = @repository.evaluate_ref :branch, params[:branch]
-    if @branch_type == :illegal_ref and (params[:action] != :delete_branch.to_s or !User.current().allowed_to?(:delete_illegal_ref, @project))
+    @branch_type = @repository.evaluate_ref :branch, params[:branch], User.current
+    if @branch_type == :private_ref 
+      if User.current().allowed_to?(:manage_private_ref, @project)
+        @branch_type = :public_ref
+      else
+        render_403 :message => l( :notice_git_private_branch, :ref_name => params[:branch] )
+        return false   
+      end
+    elsif @branch_type == :illegal_ref and (params[:action] != :delete_branch.to_s or !User.current().allowed_to?(:delete_illegal_ref, @project))
       render_403 :message => l( :notice_git_illegal_branch, :ref_name => params[:branch] )
       return false    
     end
@@ -129,7 +136,7 @@ private
 
     logger.debug "params = #{params.inspect}"
            
-    tag_type = @repository.evaluate_ref :tag, params[:tag]
+    tag_type = @repository.evaluate_ref :tag, params[:tag], User.current
     if tag_type == :illegal_ref and (params[:action] != :delete_tag.to_s or !User.current().allowed_to?(:delete_illegal_ref, @project))
        render_403 :message => l( :notice_git_illegal_tag, :ref_name => params[:tag] )
        return false

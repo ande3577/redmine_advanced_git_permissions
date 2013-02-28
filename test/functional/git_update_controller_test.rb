@@ -269,6 +269,30 @@ class GitUpdateControllerTest < ActionController::TestCase
     assert_response 200, "non-ff protected branch with permission"
   end
   
+  def test_private_branch
+    Role.find(1).add_permission! :commit_access
+    private_rule = RefRule.create(:repository => @repository, :rule_type => :private_ref, :expression => '[a-z]+', :ref_type => :branch, :regex => true)
+    private_rule.save
+    
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "1", :repository => @repository.url, :key => @api_key })
+    assert_response 403, "update private branch without permission"
+      
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @admin.login, :ff => "1", :repository => @repository.url, :key => @api_key })
+    assert_response 200, "update private branch as admin"
+      
+    
+    Role.find(1).add_permission! :manage_private_ref
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "1", :repository => @repository.url, :key => @api_key })
+    assert_response 200, "update private branch with permission"
+      
+    Role.find(1).remove_permission! :manage_private_ref
+    member = RefMember.create(:user => @user, :ref_rule => private_rule)
+    member.save
+    get(:update_branch, {:branch => "master", :proj_name => Project.first.name, :user_name => @user.login, :ff => "1", :repository => @repository.url, :key => @api_key })
+    assert_response 200, "update private branch with permission"
+    
+  end
+  
   def test_illegal_tag
     Role.find(1).add_permission! :commit_access
     

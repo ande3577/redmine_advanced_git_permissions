@@ -11,6 +11,7 @@ en:
   notice_git_user_not_specified: user not specified
   notice_git_branch_not_specified: branch not specified
   notice_git_illegal_branch: "illegal branch name %{ref_name}"
+  notice_git_private_branch: "user is not authorized to update private branch %{ref_name}"
   notice_git_user_not_authorized_protected_branch: "user is not authorized to update protected branch %{ref_name}" 
   notice_git_user_not_authorized_create_protected_branch: "user is not authorized to create protected branch %{ref_name}"
   notice_git_user_not_authorized_delete_protected_branch: "user is not authorized to delete protected branch %{ref_name}"
@@ -36,7 +37,6 @@ en:
   label_default_branch_rule: Default Branch Rule
   label_default_tag_rule: Default Tag Rule
   label_git_global_ref_rule: Global Repository Rules
-  label_git_global_ref_rule_for: "Repository Rules for: %{repository}"
   label_ref_rule_new: "New rule"
   label_manage_ref_rules: "Manage repository rules"
   label_view_ref_rules: "View Repository rules"
@@ -54,3 +54,9 @@ en:
   label_public_ref: "public_ref"
   label_protected_ref: "protected_ref"
   label_illegal_ref: "illegal_ref"
+  label_private_ref: "private_ref"
+  notice_git_add_member_succeeded: "Member added."
+  notice_git_add_member_failed: "Could not add member."
+  notice_git_member_delete_succeeded: "Member deleted."
+  notice_git_member_delete_failed: "Could not delete member."
+  label_git_ref_member: "Ref Members"

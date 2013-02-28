@@ -24,8 +24,9 @@ module RepositoryPatch
         end, 
         case rule_type
           when 'illegal_ref' then '1'
-          when 'protected_ref' then '2'
-          when 'public_ref' then '3'
+          when 'private_ref' then '2'
+          when 'protected_ref' then '3'
+          when 'public_ref' then '4'
         end"
       
       if inherit_global_rules
@@ -36,10 +37,17 @@ module RepositoryPatch
       end
     end
     
-    def evaluate_ref(ref_type, ref_name)
-      return :illegal_ref if matches?(ref_type, :illegal_ref, ref_name)
-      return :protected_ref if matches?(ref_type, :protected_ref, ref_name)
-      return :public_ref if matches?(ref_type, :public_ref, ref_name)
+    def evaluate_ref(ref_type, ref_name, user)
+      ref_rules.where(:ref_type => ref_type).each do |r|
+        if r.matches?(ref_name)
+          rule_type = r.rule_type.to_sym
+          if rule_type == :private_ref and r.includes_member?(user)
+            return :public_ref
+          end
+          return rule_type
+        end
+      end
+        
       if ref_type == :branch
         return default_branch_rule unless default_branch_rule.nil?
         return Setting.plugin_redmine_advanced_git_permissions[:default_branch_rule].to_sym

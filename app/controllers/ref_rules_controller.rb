@@ -3,10 +3,11 @@ class RefRulesController < ApplicationController
 
   append_before_filter :clear_globals
   append_before_filter :find_optional_ref_rule
-  append_before_filter :require_ref_rule, :only => [:show, :edit, :update, :destroy]  
+  append_before_filter :require_ref_rule, :only => [:show, :edit, :update, :destroy, :members, :add_members]  
   append_before_filter :find_repository
-  append_before_filter :authorize, :except => [:index]
+  append_before_filter :authorize, :except => [:index, :members, :delete_member]
   append_before_filter :find_ref_rules, :only => [:index]
+  append_before_filter :find_members, :only => [:members, :add_members]
   append_before_filter :symbolize_default_rules, :only => [:update_repository_settings]
   
   def index
@@ -137,9 +138,75 @@ class RefRulesController < ApplicationController
     end
   end
   
+  def members
+    if !User.current.allowed_to?(:commit_access, @project) and !User.current.allowed_to?(:manage_ref_rules, @project)
+      deny_access
+      return false
+    end
+    
+    @available_members = []
+    @project.users.each do |u|
+      @available_members << u if has_commit_access?(u.id) and @ref_rule.ref_members.where(:user_id => u.id).empty?
+    end
+    
+    respond_to do |format|
+      format.html
+    end
+  end
+  
+  def add_members
+    if !params[:user_ids].nil?
+      params[:user_ids].each do |uid|
+        if @members.where(:user_id => uid).empty?
+          if !has_commit_access?(uid) or !RefMember.create(:user_id => uid, :ref_rule => @ref_rule).save
+            flash[:error] = l(:notice_git_add_member_failed)
+          end
+        end
+      end
+    end
+    
+    @ref_rule.reload
+    
+    respond_to do |format|
+      format.html { redirect_to :action => :members }
+    end
+  end
+  
+  def delete_member
+    @member = RefMember.where(:id => params[:member_id]).first
+    if @member.nil?
+      render_404
+      return false
+    end
+    
+    @ref_rule = @member.ref_rule
+    @repository = @ref_rule.repository
+    @project = @repository.project
+    
+    unless User.current.allowed_to?(:manage_ref_rules, @project)
+      deny_access
+      return false
+    end
+    
+    begin
+      if @member.reload.destroy()
+        flash[:notice] = l(:notice_git_member_delete_succeeded)
+      else
+        flash[:error] = l(:notice_git_member_delete_failed)
+      end
+    rescue ::ActiveRecord::RecordNotFound # raised by #reload if issue no longer exists
+      # nothing to do, issue was already deleted (eg. by a parent)
+    end
+    
+    respond_to do |format|
+      format.html { redirect_to :action => :members, :id => @ref_rule.id }
+    end    
+  end
+  
   private
   def clear_globals
     @repository = nil
+    
     @project = nil
     @ref_rules = nil
     @ref_rule = nil
@@ -206,6 +273,15 @@ class RefRulesController < ApplicationController
     end
   end
   
+  def find_members
+    if @ref_rule.nil? or @ref_rule.global or @ref_rule.rule_type.to_sym != :private_ref
+      render_404
+      return false
+    end
+
+    @members = @ref_rule.ref_members
+  end
+  
   def symbolize_default_rules
     unless params[:default_branch_rule].nil?
       @default_branch_rule = params[:default_branch_rule].to_sym unless RefRule.rule_types.index(params[:default_branch_rule].to_sym).nil?
@@ -220,6 +296,14 @@ class RefRulesController < ApplicationController
   def symbolize(ref_rule)
     ref_rule.rule_type = ref_rule.rule_type.to_sym unless ref_rule.rule_type.nil?
     ref_rule.ref_type = ref_rule.ref_type.to_sym unless ref_rule.rule_type.nil?
+  end
+  
+  def has_commit_access?(principal_id)
+    user = User.where(:id => principal_id).first; 
+    unless user.nil?
+      return user.allowed_to?(:commit_access, @project)
+    end
+    false
   end
   
 end

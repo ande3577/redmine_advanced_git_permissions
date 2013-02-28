@@ -16,7 +16,8 @@ Redmine::Plugin.register :redmine_advanced_git_permissions do
     permission :delete_tag, :git_update => :delete_tag
     permission :update_tag, :git_update => :update_tag 
     permission :delete_illegal_ref, :git_update => :delete_illegal_ref
-    permission :manage_ref_rules, { :ref_rules => [ :index, :show, :create, :new, :edit, :destroy, :update, :update_repository_settings, :evaluate ] }
+    permission :manage_private_ref, :git_update => :manage_private_ref
+    permission :manage_ref_rules, { :ref_rules => [ :index, :show, :create, :new, :edit, :destroy, :update, :update_repository_settings, :evaluate, :members, :add_members ] }
   end
   
   # placholder to keep the hash from being removed

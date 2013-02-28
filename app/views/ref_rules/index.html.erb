@@ -5,7 +5,15 @@
 <% if @repository.nil? %>
   <h3><%= l :label_git_global_ref_rule %></h3>
 <% else %>
-  <h3><%= l :label_git_global_ref_rule_for, :repository => @repository.identifier %></h3>
+  <h3>
+    <%= link_to(@repository.identifier.present? ? h(@repository.identifier) : 'root', 
+      :controller => :repositories,
+      :action => 'show', :id => @project,
+      :repository_id => @repository.identifier_param,
+      :path => nil, :rev => @rev) %>
+  &#187; 
+      <%= l :label_ref_rules_plural %>
+  </h3>
   
   <% if User.current().allowed_to? :manage_ref_rules, @repository.project %>
     <%= form_tag({:controller => :ref_rules, :action => :update_repository_settings}, :method => :put) do %>
@@ -53,6 +61,12 @@
     <th><%=l(:field_rule_type)%></th>
     <th><%=l(:field_expression)%></th>
     <th><%=l(:field_regex)%></th>
+    <% if @repository.nil? %>
+      <th></th>
+    <% else %>
+      <th><%=l(:label_member_plural)%></th>
+    <% end %>
+     
     <th></th>
     <th></th>
     </tr></thead>
@@ -63,6 +77,15 @@
       <td align="center"><%= rule.rule_type %></td>
       <td align="center"><%= rule.expression %></td>
       <td align="center"><%= rule.regex %></td>
+      <% if @repository.nil? or rule.global or rule.rule_type != :private_ref.to_s %>
+          <td></td>
+      <% else %>
+        <% if User.current().allowed_to?(:manage_ref_rules, @repository.project) %>
+          <td align="center"><%= link_to( rule.ref_members.size, {:controller => :ref_rules, :action => :members, :id => rule.id} ) %></td>
+        <% else %>
+          <td align="center"><%= rule.ref_members.size %></td>
+        <% end %>
+      <% end %>
       <% if !@repository.nil? and (rule.global or !User.current().allowed_to?(:manage_ref_rules, @repository.project)) %>
         <td></td>
         <td></td>

@@ -4,6 +4,8 @@ require_dependency 'ref_rule'
 
 class RefRuleTest < ActiveSupport::TestCase
   fixtures :repositories
+  fixtures :users
+  fixtures :groups_users
   
   def setup
     @repository = Repository.first
@@ -35,6 +37,12 @@ class RefRuleTest < ActiveSupport::TestCase
       
     ref_rule = RefRule.create(:repository => @repository, :rule_type => :public_branch, :expression  => '', :ref_type => :branch)
     assert !ref_rule.save, "save with empty expression"
+      
+    ref_rule = RefRule.create(:repository_id => @repository.id, :rule_type => :public_ref, :expression => '*', :ref_type => :branch)
+    assert ref_rule.save, "save private"
+      
+    ref_rule = RefRule.create(:rule_type => :private_ref, :expression => '*', :global=>true, :regex => true, :ref_type => :branch)
+    assert !ref_rule.save, "cannot create global private ref"
   end
   
   def test_rule_type
@@ -49,6 +57,9 @@ class RefRuleTest < ActiveSupport::TestCase
       
     ref_rule.rule_type = :illegal_ref
     assert ref_rule.save, "save an illegal ref rule"
+     
+    ref_rule.rule_type = :private_ref
+    assert ref_rule.save, "save a private ref rule"
       
     ref_rule.rule_type = :invalid_rule
     assert !ref_rule.save, "fail to save invalid rule"
@@ -82,6 +93,25 @@ class RefRuleTest < ActiveSupport::TestCase
     
     ref_rule.expression = '.*'
     assert ref_rule.matches?('aB c D 123 * _'), ".* matches anything";
+    
+  end
+  
+  def test_members
+    ref_rule = RefRule.create(:repository => @repository, :rule_type => :private_ref, :expression => 'master', :ref_type => :branch)
+    ref_rule.save
+    assert_equal 0, ref_rule.ref_members.size
+    
+    user_member = RefMember.create(:user => User.find(2), :ref_rule => ref_rule)
+    user_member.save
+    
+    group_member = RefMember.create(:principal => Group.first, :ref_rule => ref_rule)
+    group_member.save
+    
+    assert_equal 2, ref_rule.ref_members.size
+    
+    assert !ref_rule.includes_member?(User.first)
+    assert ref_rule.includes_member?(User.find(2))
+    assert ref_rule.includes_member?(Group.first.users.first)
     
   end
   

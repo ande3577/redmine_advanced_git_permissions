@@ -1,7 +1,11 @@
 <div class="box tabular">
   <h3><%= l(:label_ref_rule_settings) %></h3>
   <p><%= f.select :ref_type, RefRule.ref_types %></p>
-  <p><%= f.select :rule_type, RefRule.rule_types %></p>
+  <% if @repository.nil? %>
+    <p><%= f.select :rule_type, [[l(:label_inherit_global_default, :rule_type => Setting.plugin_redmine_advanced_git_permissions[:default_branch_rule]),:inherit_global],[l(:label_public_ref),:public_ref],[l(:label_protected_ref), :protected_ref],[l(:label_illegal_ref), :illegal_ref]] %></p>
+  <% else %>
+    <p><%= f.select :rule_type, [[l(:label_inherit_global_default, :rule_type => Setting.plugin_redmine_advanced_git_permissions[:default_branch_rule]),:inherit_global],[l(:label_public_ref),:public_ref],[l(:label_protected_ref), :protected_ref],[l(:label_private_ref), :private_ref],[l(:label_illegal_ref), :illegal_ref]] %></p>
+  <% end %>
   <p><%= f.text_field :expression %></p>
   <p><%= f.check_box :regex %></p>
   <%= f.hidden_field :global, :value => @repository.nil? %>

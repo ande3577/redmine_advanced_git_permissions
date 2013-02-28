@@ -15,12 +15,22 @@ class RefRulesControllerTest < ActionController::TestCase
     @user = User.where(:id => 2).first
     @admin = User.where(:admin => true).first
     
+    
+    @private_rule = RefRule.create(:repository => @repository, :rule_type => :private_ref, :expression => '[a-z]+', :ref_type => :branch, :regex => true)
+    @private_rule.save
     @protected_rule = RefRule.create(:repository => @repository, :rule_type => :protected_ref, :expression => '[a-z]+', :ref_type => :branch, :regex => true)
     @protected_rule.save
     @global_rule = RefRule.create(:rule_type => :illegal_ref, :expression => 'illegalglobal', :ref_type => :branch, :global => true)
     @global_rule.save
     
     Role.find(1).add_permission! :manage_ref_rules
+    Role.find(1).add_permission! :commit_access
+    
+    @user_member = RefMember.new(:user => @user, :ref_rule => @private_rule)
+    @user_member.save
+    
+    @group = Group.first
+    
   end
   
   # Replace this with your real tests.
@@ -41,8 +51,8 @@ class RefRulesControllerTest < ActionController::TestCase
     get :index, :repository_id => @repository.id
     assert_response 200
     ref_rules = assigns(:ref_rules)
-    assert_equal 1, ref_rules.size
-    assert_equal @protected_rule, ref_rules.first
+    assert_equal 2, ref_rules.size
+    assert_equal @private_rule, ref_rules.first
     
     get :index, :repository_id => '99'
     assert_response 404, "invalid repository"
@@ -54,8 +64,8 @@ class RefRulesControllerTest < ActionController::TestCase
     get :index, :repository_id => @repository.id
     assert_response 200
     ref_rules = assigns(:ref_rules)
-    assert_equal 1, ref_rules.size
-    assert_equal @protected_rule, ref_rules.first
+    assert_equal 2, ref_rules.size
+    assert_equal @private_rule, ref_rules.first
     
     Role.find(1).remove_permission! :manage_ref_rules
     Role.find(1).remove_permission! :commit_access
@@ -318,6 +328,60 @@ class RefRulesControllerTest < ActionController::TestCase
     put :update_repository_settings, :repository_id => @repository.id, :inherit_global_rules => true, :default_branch_rule => 'default', :default_tag_rule => 'something_else'
     assert_equal nil, assigns(:repository).default_branch_rule
     assert_equal nil, assigns(:repository).default_tag_rule
+  end
+  
+  def test_members
+    get :members, :id => @private_rule.id
+    assert_response 302, "get a members page as anon"
+      
+    @request.session[:user_id] = @user.id
+      
+    get :members, :id => @protected_rule.id
+    assert_response 404, "cannot get members of non-private rule"
+      
+    get :members, :id => @private_rule.id
+    assert_response 200
+    assert_equal 1, assigns(:members).size
+    assert_equal @user_member, assigns(:members).first
+    assert assigns(:available_members).empty?
+    
+    @user_member.destroy
+    get :members, :id => @private_rule.id
+    assert_response 200
+    assert_equal 0, assigns(:members).size
+    assert assigns(:members).empty?
+    assert_equal 1, assigns(:available_members).size
+  end
+  
+  def test_add_members
+    @user_member.destroy
+    
+    post :add_members, :id => @private_rule.id, :user_ids => [@user.id]
+    assert_response 302, "get a members page as anon"
+          
+    @request.session[:user_id] = @user.id
+    post :add_members, :id => @private_rule.id, :user_ids => [@user.id]
+    assert_redirected_to :controller => :ref_rules, :action => :members, :id => @private_rule
+    assert_equal @user, @private_rule.ref_members.first.user
+    
+    post :add_members, :id => @private_rule.id, :user_ids => [@user.id]
+    assert_redirected_to :controller => :ref_rules, :action => :members, :id => @private_rule
+    assert_equal 1, @private_rule.ref_members.size
+    
+    post :add_members, :id => @private_rule.id, :user_ids => [User.last]
+    assert_redirected_to :controller => :ref_rules, :action => :members, :id => @private_rule
+    assert_equal 1, @private_rule.ref_members.size
+    
+  end
+  
+  def test_delete_member
+    delete :delete_member, :member_id => @user_member.id
+    assert_response 302, "delete member as anon"
+      
+    @request.session[:user_id] = @user.id
+    delete :delete_member, :member_id => @user_member.id
+    assert_redirected_to :controller => :ref_rules, :action => :members, :id => @private_rule
+    assert_equal 0, @private_rule.ref_members.size
   end
   
 end
