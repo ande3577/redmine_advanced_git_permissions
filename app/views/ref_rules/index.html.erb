@@ -1,6 +1,8 @@
-<div class="contextual">
-<%= link_to l(:label_ref_rule_new), {:controller => 'ref_rules', :action => 'new', :repository_id => @repository}, :class => 'icon icon-add' %>
-</div>
+<% if (@repository.nil? && User.current().admin?) ||  (User.current().allowed_to?(:manage_ref_rules, @repository.project)) %>
+  <div class="contextual">
+    <%= link_to l(:label_ref_rule_new), {:controller => 'ref_rules', :action => 'new', :repository_id => @repository}, :class => 'icon icon-add' %>
+  </div>
+<% end %>
 
 <% if @repository.nil? %>
   <h3><%= l :label_git_global_ref_rule %></h3>
