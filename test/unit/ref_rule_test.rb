@@ -38,7 +38,7 @@ class RefRuleTest < ActiveSupport::TestCase
     ref_rule = RefRule.create(:repository => @repository, :rule_type => :public_branch, :expression  => '', :ref_type => :branch)
     assert !ref_rule.save, "save with empty expression"
       
-    ref_rule = RefRule.create(:repository_id => @repository.id, :rule_type => :public_ref, :expression => '*', :ref_type => :branch)
+    ref_rule = RefRule.create(:repository_id => @repository.id, :rule_type => :private_ref, :expression => '*', :ref_type => :branch)
     assert ref_rule.save, "save private"
       
     ref_rule = RefRule.create(:rule_type => :private_ref, :expression => '*', :global=>true, :regex => true, :ref_type => :branch)
@@ -113,6 +113,35 @@ class RefRuleTest < ActiveSupport::TestCase
     assert ref_rule.includes_member?(User.find(2))
     assert ref_rule.includes_member?(Group.first.users.first)
     
+  end
+  
+  def test_copy
+    ref_rule = RefRule.create(:repository_id => @repository.id, :rule_type => :public_ref, :expression => '*', :ref_type => :branch)
+    ref_rule.reload
+    copy = ref_rule.copy
+    copy.ref_type = copy.ref_type.to_sym
+    copy.rule_type = copy.rule_type.to_sym
+    
+    assert_equal @repository, copy.repository, "repository after create"
+    assert_equal :public_ref, copy.rule_type.to_sym, "rule type after create"
+    assert_equal '*', copy.expression, "expression after create"
+    assert_equal :branch, copy.ref_type.to_sym, "ref type after create" 
+    assert !copy.global, "global after create"
+    assert !copy.regex, "not regex after create"
+    assert copy.save, "save tied to repository"
+  end
+  
+  def test_copy_global
+    ref_rule = RefRule.create(:rule_type => :public_ref, :expression => '*', :global=>true, :regex => true, :ref_type => :branch)
+    ref_rule.reload
+    copy = ref_rule.copy
+    copy.ref_type = copy.ref_type.to_sym
+    copy.rule_type = copy.rule_type.to_sym
+    
+    assert_equal nil, copy.repository, "create without repository"
+    assert copy.global, "global repository"
+    assert copy.regex, "regex after create"
+    assert copy.save, "save global"
   end
   
 end

@@ -22,6 +22,11 @@ class RefRule < ActiveRecord::Base
   validates :ref_type, :inclusion => { :in => [:branch, :tag] }
   validates_with RefRuleValidator
   
+  def copy
+    RefRule.new(:repository => repository, :rule_type => rule_type, 
+      :ref_type => ref_type, :expression => expression, :regex => regex, :global => global)
+  end
+  
   def matches?(branch)
     RefRule.evaluate(branch, expression, regex)
   end

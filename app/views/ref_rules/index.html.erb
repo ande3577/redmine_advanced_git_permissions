@@ -1,5 +1,21 @@
 <% if (@repository.nil? && User.current().admin?) ||  (User.current().allowed_to?(:manage_ref_rules, @repository.project)) %>
   <div class="contextual">
+    <% unless @repository.nil? %>
+      <div id="ref-rules-import-options" style="display:none;">
+        <h3 class="title"><%= l(:label_ref_rules_import_options) %></h3>
+        <%= form_tag :action => :import do %>
+          <label for="source"><%= l(:label_select_repository_to_import) %></label>
+          <%= select_tag l(:label_repository_plural), options_for_repository_input(), { :name => 'source'} %>
+          
+          <p class="buttons">
+            <%= submit_tag l(:button_import), :name => nil, :onclick => "hideModal(this);" %>
+            <%= submit_tag l(:button_cancel), :name => nil, :onclick => "hideModal(this);", :type => 'button' %>
+          </p>
+        <% end %>
+      </div>
+    
+      <%= link_to l(:label_import_ref_rules), url_for(:controller => :ref_rules, :action => :import), { :class => 'icon icon-duplicate', :onclick => "showModal('ref-rules-import-options', '330px'); return false;" } %>
+    <% end %>
     <%= link_to l(:label_ref_rule_new), {:controller => 'ref_rules', :action => 'new', :repository_id => @repository}, :class => 'icon icon-add' %>
   </div>
 <% end %>
@@ -13,6 +29,7 @@
       :action => 'show', :id => @project,
       :repository_id => @repository.identifier_param,
       :path => nil, :rev => @rev) %>
+    
   &#187; 
       <%= l :label_ref_rules_plural %>
   </h3>
@@ -33,6 +50,7 @@
         <%= submit_tag l :button_submit  %>
       </p>
     <% end %>
+    
   <% else %>
     <p><strong>
     <%= l(:label_default_branch_rule) + ": "%>

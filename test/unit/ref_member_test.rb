@@ -54,4 +54,14 @@ class RefMemberTest < ActiveSupport::TestCase
     assert !member.include?(@user)
     assert member.include?(@group.users.first)
   end
+  
+  def test_copy
+    member = RefMember.create(:user => @user,  :ref_rule => @private_rule)
+    assert member.save
+    copy = member.copy
+    
+    assert_equal @user, copy.user
+    assert_equal @private_rule, copy.ref_rule
+    assert_not_equal copy, member
+  end
 end

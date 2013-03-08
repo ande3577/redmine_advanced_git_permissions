@@ -6,6 +6,7 @@ class RefRulesControllerTest < ActionController::TestCase
   fixtures :roles
   fixtures :members
   fixtures :member_roles
+  fixtures :repositories
   
   def setup
     @project = Project.where(:id => 1).first
@@ -382,6 +383,79 @@ class RefRulesControllerTest < ActionController::TestCase
     delete :delete_member, :member_id => @user_member.id
     assert_redirected_to :controller => :ref_rules, :action => :members, :id => @private_rule
     assert_equal 0, @private_rule.ref_members.size
+  end
+  
+  def test_import_as_anon
+    post :import, :repository_id => Repository.last, :source => @repository.id 
+    assert_response 302, "import as anon"
+    assert_redirected_to :controller => :account, :action => :login, :back_url => "http://test.host/repositories/#{Repository.last.id.to_s}/ref_rules/import"
+  end
+  
+  def test_import_when_not_member
+    @request.session[:user_id] = @user.id
+    post :import, :repository_id => Repository.last
+    assert_response 403
+  end
+  
+  def test_import_without_source
+    @request.session[:user_id] = @user.id
+    post :import, :repository_id => @repository.id
+    assert_response 404
+  end
+  
+  def test_import_with_invalid_source
+    @request.session[:user_id] = @user.id
+    post :import, :repository_id => @repository.id, :source => 99
+    assert_response 404
+  end
+  
+  def test_import_without_access_to_source
+    @request.session[:user_id] = @user.id
+    post :import, :repository_id => @repository.id, :source => Repository.last.id
+    assert_response 403
+  end
+  
+  def test_import_self
+    @request.session[:user_id] = @user.id
+    post :import, :repository_id => @repository.id, :source => @repository.id
+    assert_response 404
+  end
+  
+  def test_import
+    @user_member = RefMember.new(:user => @admin, :ref_rule => @private_rule)
+    @user_member.save
+    
+    @request.session[:user_id] = @admin.id
+    @repository.inherit_global_rules = true
+    @repository.default_branch_rule = :protected_ref
+    @repository.default_tag_rule = :illegal_ref
+    @repository.save
+    @repository.reload
+    repository = Repository.last
+    project = repository.project
+    project.enable_module!(:repository)
+    
+    post :import, :repository_id => repository.id, :source => @repository.id
+    assert_redirected_to :controller => :ref_rules, :action => :index, :repository_id => repository.id
+    assert flash[:error].nil?
+    
+    repository.reload
+    assert repository.inherit_global_rules
+    assert_equal :protected_ref, repository.default_branch_rule.to_sym
+    assert_equal :illegal_ref, repository.default_tag_rule.to_sym
+    assert_equal @repository.ref_rules.size, repository.ref_rules.size
+    
+    post :import, :repository_id => repository.id, :source => @repository.id
+    assert_redirected_to :controller => :ref_rules, :action => :index, :repository_id => repository.id
+    assert flash[:error].nil?
+    repository.reload
+    assert_equal @repository.ref_rules.size, repository.ref_rules.size, "don't reload existing rules"
+    
+    assert_equal 1, repository.ref_rules.where(:rule_type => :private_ref).first.ref_members.size
+    assert_equal @admin, repository.ref_rules.where(:rule_type => :private_ref).first.ref_members.first.user
+    
+    repository.reload
+    assert repository.inherit_global_rules
   end
   
 end

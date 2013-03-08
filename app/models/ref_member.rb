@@ -29,5 +29,9 @@ class RefMember < ActiveRecord::Base
     end
   end
   
+  def copy
+    return RefMember.new(:ref_rule => ref_rule, :user => user)
+  end
+  
 end
 

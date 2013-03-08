@@ -203,6 +203,48 @@ class RefRulesController < ApplicationController
     end    
   end
   
+  def import
+    source = Repository.where(:id => params[:source]).first;
+    
+    return render_404 if source.nil? or source.eql? @repository
+    return render_403 if !User.current.allowed_to?(:commit_access, source.project) and !User.current.allowed_to?(:manage_ref_rules, source.project)
+
+    @repository.inherit_global_rules = source.inherit_global_rules if source.inherit_global_rules and !@repository.inherit_global_rules
+    @repository.default_branch_rule = source.default_branch_rule.to_sym if source.default_branch_rule and @repository.default_branch_rule.nil?
+    @repository.default_tag_rule = source.default_tag_rule.to_sym if source.default_branch_rule and @repository.default_tag_rule.nil?
+
+    symbolize_repository(@repository)    
+    
+    if !@repository.save
+      flash[:error] = l(:notice_git_import_failed)
+    else
+      RefRule.where(:repository_id => source.id).each do |r|
+        if @repository.ref_rules.where(:expression => r.expression, :regex => r.regex, :ref_type => r.ref_type, :rule_type => r.rule_type).empty?
+          copy = r.copy()
+          copy.repository = @repository
+          symbolize(copy)
+          if !copy.save
+            flash[:error] = l(:notice_git_import_failed)
+          elsif copy.rule_type.to_sym == :private_ref
+            r.ref_members.each do |m|
+              if m.user.allowed_to?(:commit_access, @project)
+                member = m.copy
+                m.ref_rule = copy
+                if !m.save
+                  flash[:error] = l(:notice_git_import_failed)
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+    
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
+    end
+  end
+  
   private
   def clear_globals
     @repository = nil
@@ -296,6 +338,11 @@ class RefRulesController < ApplicationController
   def symbolize(ref_rule)
     ref_rule.rule_type = ref_rule.rule_type.to_sym unless ref_rule.rule_type.nil?
     ref_rule.ref_type = ref_rule.ref_type.to_sym unless ref_rule.rule_type.nil?
+  end
+  
+  def symbolize_repository(repository)
+    repository.default_branch_rule = repository.default_branch_rule.to_sym unless repository.default_branch_rule.nil?
+    repository.default_tag_rule = repository.default_tag_rule.to_sym unless repository.default_tag_rule.nil?
   end
   
   def has_commit_access?(principal_id)
