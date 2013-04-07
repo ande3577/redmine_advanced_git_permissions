@@ -8,6 +8,9 @@ class RepositoryTest < ActiveSupport::TestCase
   
   def setup
     @repository = Repository.first
+    @repository.enable_advanced_permissions = true;
+    @repository.save
+    
     @tag_rule = RefRule.create(:repository => @repository, :rule_type => :public_ref, :expression => 'tag', :ref_type => :tag, :regex => true)
     @tag_rule.save
     @rule = RefRule.create(:repository => @repository, :rule_type => :public_ref, :expression => '[a-zA-Z]+', :ref_type => :branch, :regex => true)
@@ -104,6 +107,6 @@ class RepositoryTest < ActiveSupport::TestCase
     assert_equal :protected_ref, @repository.evaluate_ref(:tag, 'Public', user), "branch rules don't affect tags"
       
     assert_equal :public_ref, @repository.evaluate_ref(:tag, 'tag', user), "tag rules can be looked up"
-    
   end
+  
 end

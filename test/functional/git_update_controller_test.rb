@@ -14,6 +14,8 @@ class GitUpdateControllerTest < ActionController::TestCase
     @project = Project.where(:id => 1).first
     @project.enable_module!(:repository)
     @repository = @project.repositories.first
+    @repository.enable_advanced_permissions = true
+    @repository.save
     
     @user = User.where(:id => 2).first
     @admin = User.where(:admin => true).first
@@ -328,6 +330,20 @@ class GitUpdateControllerTest < ActionController::TestCase
     Role.find(1).add_permission! :update_protected_ref
     get(:update_tag, {:tag => "protectedtag", :proj_name => Project.first.name, :user_name => @user.login, :annotated => "1", :repository => @repository.url, :key => @api_key } )
     assert_response 200, "update protected tag with permission"
+  end
+  
+  def test_with_advanced_permissions_disabled
+    Role.find(1).add_permission! :commit_access
+    Role.find(1).add_permission! :update_tag
+    
+    protected_rule = RefRule.create(:repository => @repository, :rule_type => :protected_ref, :expression => '[a-z]+', :ref_type => :tag, :regex => true)
+    protected_rule.save
+    
+    @repository.enable_advanced_permissions = false;
+    @repository.save
+    
+    get(:update_tag, {:tag => "protectedtag", :proj_name => Project.first.name, :user_name => @user.login, :annotated => "1", :repository => @repository.url, :key => @api_key } )
+    assert_response 200, "allow if advanced permissions disabled"
   end
   
   

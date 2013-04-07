@@ -2,7 +2,7 @@ class GitUpdateController < ApplicationController
   unloadable
 
   skip_before_filter :check_if_login_required
-  before_filter :check_enabled, :find_project, :find_repository, :find_user, :require_commit_access 
+  before_filter :check_enabled, :find_project, :find_repository, :find_user, :check_for_disabled, :require_commit_access 
   
   append_before_filter :authorize, :except => :update_branch
   append_before_filter :validate_branch, :only => [ :create_branch, :delete_branch, :update_branch ]
@@ -95,6 +95,15 @@ private
     
     if @repository.nil?
       render_404 :message => :notice_git_repository_not_found
+      return false
+    end
+    true
+  end
+  
+  def check_for_disabled
+    # if advanced permissions disabled on the repository, just treat it as enabled
+    unless @repository.enable_advanced_permissions
+      render_api_ok
       return false
     end
     true

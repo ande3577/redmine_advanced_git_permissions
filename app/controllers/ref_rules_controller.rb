@@ -120,6 +120,7 @@ class RefRulesController < ApplicationController
       return false
     end
     
+    @repository.enable_advanced_permissions = params[:enable_advanced_permissions]
     @repository.inherit_global_rules = params[:inherit_global_rules]
     @repository.default_branch_rule = @default_branch_rule
     @repository.default_tag_rule = @default_tag_rule

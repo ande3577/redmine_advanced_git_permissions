@@ -36,8 +36,14 @@
   
   <% if User.current().allowed_to? :manage_ref_rules, @repository.project %>
     <%= form_tag({:controller => :ref_rules, :action => :update_repository_settings}, :method => :put) do %>
-      <%= label_tag l(:field_inherit_global_rules) %>
-      <%= check_box_tag :inherit_global_rules, true, @repository.inherit_global_rules  %>
+      <p>
+        <%= label_tag l(:field_enable_advanced_permissions) %>
+        <%= check_box_tag :enable_advanced_permissions, true, @repository.enable_advanced_permissions  %>
+      </p>
+      <p>
+        <%= label_tag l(:field_inherit_global_rules) %>
+        <%= check_box_tag :inherit_global_rules, true, @repository.inherit_global_rules  %>
+      </p>
       <p>
         <%= content_tag(:label, l(:label_default_branch_rule)) %>
         <%= select_tag :default_branch_rule, options_for_select([[l(:label_inherit_global_default, :rule_type => Setting.plugin_redmine_advanced_git_permissions[:default_branch_rule]),:inherit_global],[l(:label_public_ref),:public_ref],[l(:label_protected_ref), :protected_ref],[l(:label_illegal_ref), :illegal_ref]], @repository.default_branch_rule) %>

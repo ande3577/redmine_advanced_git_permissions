@@ -49,6 +49,7 @@ en:
   field_ref_type: Ref Type
   field_rule_type: Rule Type
   field_regex: Regular Expression
+  field_enable_advanced_permissions: Enable Advanced Permissions
   field_inherit_global_rules: Inherit global rules
   label_ref_rule_settings: Rule Settings 
   field_test_expression: Test Expression
