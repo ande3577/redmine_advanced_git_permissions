@@ -113,6 +113,7 @@ class RefRuleTest < ActiveSupport::TestCase
     assert ref_rule.includes_member?(User.find(2))
     assert ref_rule.includes_member?(Group.first.users.first)
     
+    ref_rule.destroy
   end
   
   def test_copy

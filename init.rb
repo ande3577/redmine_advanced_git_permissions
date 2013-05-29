@@ -1,6 +1,7 @@
 require 'redmine'
 
 require_dependency 'git_permissions_repository_patch'
+require_dependency 'git_permissions_user_patch'
 require_dependency 'git_permissions_repositories_helper_patch'
 require_dependency 'git_permissions_hook_listener'
 

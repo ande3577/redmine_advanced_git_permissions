@@ -39,6 +39,18 @@ class RefMemberTest < ActiveSupport::TestCase
     member.ref_rule = protected_rule
     assert !member.save
     
+    id = @user.id
+    @user.destroy
+    assert RefMember.where(:user_id => id).empty?
+  end
+  
+  def test_destroy_user
+    member = RefMember.create(:user => @user,  :ref_rule => @private_rule)
+    assert member.save
+    
+    id = @user.id
+    @user.destroy
+    assert RefMember.where(:user_id => id).empty?
   end
   
   def test_include
@@ -64,4 +76,5 @@ class RefMemberTest < ActiveSupport::TestCase
     assert_equal @private_rule, copy.ref_rule
     assert_not_equal copy, member
   end
+  
 end
