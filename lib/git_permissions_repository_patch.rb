@@ -7,7 +7,7 @@ module RepositoryPatch
     base.send(:extend, ClassMethods)
     base.send(:include, InstanceMethods)
     base.class_eval do
-      has_many :ref_rules
+      has_many :ref_rules, :dependent => :destroy
       validates :default_branch_rule, :inclusion => { :in => [nil, :public_ref, :protected_ref, :illegal_ref] }
       validates :default_tag_rule, :inclusion => { :in => [nil, :public_ref, :protected_ref, :illegal_ref] }
     end

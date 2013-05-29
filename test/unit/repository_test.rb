@@ -109,4 +109,12 @@ class RepositoryTest < ActiveSupport::TestCase
     assert_equal :public_ref, @repository.evaluate_ref(:tag, 'tag', user), "tag rules can be looked up"
   end
   
+  def test_destroy
+    id = @repository.id
+    @repository.destroy
+    @global_rule.reload
+    assert @global_rule
+    assert RefRule.where(:repository_id => id).empty?
+  end
+  
 end

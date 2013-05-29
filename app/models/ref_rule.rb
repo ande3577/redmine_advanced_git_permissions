@@ -13,7 +13,7 @@ class RefRule < ActiveRecord::Base
   
   safe_attributes 'repository_id', 'rule_type', 'expression', 'global', 'regex', 'ref_type'
   
-  has_many :ref_members, :include => :principal, :conditions => "#{User.table_name}.type='User' AND #{User.table_name}.status=#{User::STATUS_ACTIVE}"
+  has_many :ref_members, :dependent => :destroy, :include => :principal, :conditions => "#{User.table_name}.type='User' AND #{User.table_name}.status=#{User::STATUS_ACTIVE}"
   
   belongs_to :repository
   validates_presence_of :repository, :unless => :global
